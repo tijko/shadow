@@ -1,12 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''
+This module sets up and handles the netlink communication.  Once the netlink
+connection is established, the socket connection will remain open for the 
+duration of the process being shadowed.  Each message requested is built,  
+parsed, and routed through these local functions.   
+'''
+
 import socket
 import struct
 
 from exception import *
 
 
+'''
+Constants and flags used for creating usable netlink messages
+'''
+ 
 NLMSG_ERROR = 0x2 
 NLMSG_VERSION= 0x10
 CTRL_CMD_GETFAMILY = 0x3
@@ -32,7 +43,10 @@ NTLNK_GENR = 0x10
 
 
 class __NetLinkConn(object):
-
+    '''
+    Base class to establish a netlink socket connection and signal message
+    request to userspace for a give process
+    '''
     def __init__(self):
         self.__conn = socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, NTLNK_GENR)
         self.__conn.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, OPT_VAL)
