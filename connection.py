@@ -45,7 +45,7 @@ NTLNK_GENR = 0x10
 class __NetLinkConn(object):
     '''
     Base class to establish a netlink socket connection and signal message
-    request to userspace for a give process
+    request to userspace for a given process
     '''
     def __init__(self):
         self.__conn = socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, NTLNK_GENR)
