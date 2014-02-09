@@ -1,9 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+'''
+Exceptions for Profile objects.
+'''
+
 
 class BadProcess(Exception):
-    
+    '''
+    Error finding pid supplied.
+    '''    
     def __init__(self, pid):
         self.pid = pid
 
@@ -13,7 +19,9 @@ class BadProcess(Exception):
 
 
 class EmptyNtlnkMsg(Exception):
-
+    '''
+    Netlink message returned an empty response.
+    '''
     def __init__(self, func, pid):
         self.func = func
         self.pid = pid
@@ -24,7 +32,9 @@ class EmptyNtlnkMsg(Exception):
 
 
 class StructParseError(Exception):
-
+    '''
+    Error parsing netlink struct.
+    '''
     def __init__(self, func, pid):
         self.func = func
         self.pid = pid
