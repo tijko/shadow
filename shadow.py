@@ -13,7 +13,6 @@ class Profile(__NetLinkConn):
     Profile object: builds a <Profile> object from the "pid" provided on
     initialization.
     '''
-    
     def __init__(self, pid):
         super(Profile, self).__init__()
         self.pid = pid
@@ -78,7 +77,7 @@ class Profile(__NetLinkConn):
         pids group id.
         '''
         attrs = self.__pid_attrs()
-        return attrs.get('gids')
+        return attrs.get('gid')
 
     @property
     def threads(self):
@@ -148,12 +147,11 @@ class Profile(__NetLinkConn):
         '''
         try:
             with open('/proc/%s/status' % self.pid) as f:
-                raw_attrs = f.readlines()
+                raw_attrs = f.read()
         except IOError:
             raise BadProcess(self.pid)
-        attrs_lns = [i.split('\t')[:2] for i in raw_attrs]   
-        attrs_parse = [(i.strip(':'), v.strip('\n')) for i,v in attrs_lns]
-        pid_attrs = {k.lower():v for k,v in attrs_parse}
+        pid_attrs = {i[0].strip(':').lower():i[1:] for i in
+                     [attr.split() for attr in raw_attrs.split('\n')] if i}
         return pid_attrs
 
     def __str__(self):
