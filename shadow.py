@@ -9,6 +9,24 @@ from connection import __NetLinkConn
 
 
 class Profile(__NetLinkConn):
+
+    STAT_FIELDS = ['pid', 'tcomm', 'state', 'ppid', 'pgrp', 'sid', 'tty_nr', 
+                   'tty_pgrp', 'flags', 'min_flt', 'cmin_flt', 'maj_flt',
+                   'cmaj_flt', 'utime', 'stime', 'cutime', 'cstime',
+                   'priority', 'nice', 'num_threads', 'it_real_value', 
+                   'start_time', 'vsize', 'rss', 'rsslim', 'start_code', 
+                   'end_code', 'start_stack', 'esp', 'eip', 'pending', 
+                   'blocked', 'sigign', 'sigcatch', 'wchan', 'NONE', 'NONE', 
+                   'exit_signal', 'task_cpu', 'rt_priority', 'policy', 
+                   'blkio_ticks', 'gtime', 'cgtime', 'start_data', 'end_data', 
+                   'arg_start', 'arg_end', 'env_start', 'env_end', 'exit_code'
+                  ]
+
+    PROC_STATES = {'R':'running', 'S':'interruptible_sleep', 
+                   'D':'uninterruptible_disk_sleep', 'Z':'zombie', 
+                   'T':'traced', 'W':'paging'
+                  }
+
     '''
     Profile object: builds a <Profile> object from the "pid" provided on
     initialization.
@@ -32,7 +50,7 @@ class Profile(__NetLinkConn):
         return False
 
     @property
-    def parent(self):
+    def ppid(self):
         '''
         Class property: returns <type 'int'> of the profiled pid's parent.
         '''
@@ -76,7 +94,7 @@ class Profile(__NetLinkConn):
         Class property: returns <type 'str'> or <type 'NoneType'> of profiled 
         pids group id.
         '''
-        attrs = self.__pid_attrs()
+        attrs = self.__pid_status_attrs()
         gid = attrs.get('gid')
         if gid:
             return gid[0]
@@ -87,10 +105,16 @@ class Profile(__NetLinkConn):
         Class property: returns <type 'str'> or <type 'NoneType'> of profiled 
         pids thread count.
         '''
-        attrs = self.__pid_attrs()
+        attrs = self.__pid_status_attrs()
         threads = attrs.get('threads')
         if threads:
             return threads[0]
+
+    @property
+    def state(self):
+        attrs = self.__pid_stat_attrs()
+        state = attrs.get('state')
+        return self.PROC_STATES[state]
 
     def rBytes(self):
         '''
@@ -144,7 +168,7 @@ class Profile(__NetLinkConn):
         current_w = self.wBytes()
         return current_w - self.__wst_state
 
-    def __pid_attrs(self):
+    def __pid_status_attrs(self):
         '''
         Private class method: (not meant to be called directly) populates a
         <type 'dict'> with pids attributes.
@@ -157,6 +181,15 @@ class Profile(__NetLinkConn):
         pid_attrs = {i[0].strip(':').lower():i[1:] for i in
                      [attr.split() for attr in raw_attrs.split('\n')] if i}
         return pid_attrs
+
+    def __pid_stat_attrs(self):
+        try:
+            with open('/proc/%s/stat' % self.pid) as f:
+                stats = f.read()
+        except IOError:
+            raise BadProcess(self.pid)
+        pid_stats = dict(zip(self.STAT_FIELDS, stats.split()))
+        return pid_stats
 
     def __str__(self):
         return self.__repr__()
