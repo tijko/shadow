@@ -38,6 +38,10 @@ class Profile(__NetLinkConn):
         self.__wst_state = self.wBytes()
         self._last_r = self.__rst_state
         self._last_w = self.__wst_state
+        self.__st_switches = self.__pid_status_attrs.get(
+                                 'voluntary_ctxt_switches')
+        if not self.__st_switches:
+            self.__st_switches = 0
 
     @property
     def is_alive(self):
@@ -131,6 +135,18 @@ class Profile(__NetLinkConn):
             return int(switches[0])
         return
 
+    def has_switched(self):
+        '''
+        Class method: returns <type 'bool'> to signal if there have voluntary
+        context switches since initialization or last call of this method.
+        '''
+        current_switches = self.__pid_status_attrs.get(
+                                'voluntary_ctxt_switches')
+        if current_switches > self.__st_switches:
+            self.__st_switches = current_switches
+            return True
+        return False
+
     def rBytes(self):
         '''
         Class method: returns <type 'int'> of pids total read bytes since 
@@ -149,7 +165,8 @@ class Profile(__NetLinkConn):
 
     def has_read(self):
         '''
-        Class method: returns <type 'bool'> for pid's reads since last call.
+        Class method: returns <type 'bool'> for pid's reads since 
+        initialization or the last call of this method.
         '''
         current_r = self.rBytes()
         if current_r > self._last_r:
@@ -159,7 +176,8 @@ class Profile(__NetLinkConn):
 
     def has_write(self):
         '''
-        Class method: returns <type 'bool'> for the pids writes since last call.
+        Class method: returns <type 'bool'> for the pids writes since 
+        initialization or last call of this method.
         '''
         current_w = self.wBytes()
         if current_w > self._last_w:
