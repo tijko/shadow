@@ -94,21 +94,21 @@ class Profile(__NetLinkConn):
         Class property: returns <type 'str'> or <type 'NoneType'> of profiled 
         pids group id.
         '''
-        attrs = self.__pid_status_attrs()
-        gid = attrs.get('gid')
+        gid = self.__pid_status_attrs.get('gid')
         if gid:
             return gid[0]
+        return
 
     @property
     def threads(self):
         '''
-        Class property: returns <type 'str'> or <type 'NoneType'> of profiled 
+        Class property: returns <type 'int'> or <type 'NoneType'> of profiled 
         pids thread count.
         '''
-        attrs = self.__pid_status_attrs()
-        threads = attrs.get('threads')
+        threads = self.__pid_status_attrs.get('threads')
         if threads:
-            return threads[0]
+            return int(threads[0])
+        return
 
     @property
     def state(self):
@@ -116,9 +116,20 @@ class Profile(__NetLinkConn):
         Class property: returns <type 'str'> or <type 'NoneType'> of profiled
         pids current state.
         '''
-        attrs = self.__pid_stat_attrs()
-        state = attrs.get('state')
-        return self.PROC_STATES[state]
+        state = self.__pid_stat_attrs.get('state')
+        if state:
+            return self.PROC_STATES[state]
+        return 'Unknown'
+
+    def switches(self):
+        '''
+        Class method: returns <type 'int'> for the number of context switches
+        of profiled pid.
+        '''
+        switches = self.__pid_status_attrs.get('voluntary_ctxt_switches')
+        if switches:
+            return int(switches[0])
+        return
 
     def rBytes(self):
         '''
@@ -172,9 +183,10 @@ class Profile(__NetLinkConn):
         current_w = self.wBytes()
         return current_w - self.__wst_state
 
+    @property
     def __pid_status_attrs(self):
         '''
-        Private class method: (not meant to be called directly) populates a
+        Private class property: (not meant to be called directly) populates a
         <type 'dict'> with pid attributes read from "status".
         '''
         try:
@@ -186,9 +198,10 @@ class Profile(__NetLinkConn):
                      [attr.split() for attr in raw_attrs.split('\n')] if i}
         return pid_attrs
 
+    @property
     def __pid_stat_attrs(self):
         '''
-        Private class method: (not meant to be called directly) populates a
+        Private class property: (not meant to be called directly) populates a
         <type 'dict'> with pid attributes read from "stat".
         '''
         try:
