@@ -203,4 +203,4 @@ class Profile(__NetLinkConn):
         return self.__repr__()
 
     def __repr__(self):
-        return "%s %s" % (self.__class__, self.pid)
+        return "<class '%s (pid: %s)'>" % (self.__class__.__name__, self.pid)
