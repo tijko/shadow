@@ -77,7 +77,9 @@ class Profile(__NetLinkConn):
         pids group id.
         '''
         attrs = self.__pid_attrs()
-        return attrs.get('gid')
+        gid = attrs.get('gid')
+        if gid:
+            return gid[0]
 
     @property
     def threads(self):
@@ -86,7 +88,9 @@ class Profile(__NetLinkConn):
         pids thread count.
         '''
         attrs = self.__pid_attrs()
-        return attrs.get('threads')
+        threads = attrs.get('threads')
+        if threads:
+            return threads[0]
 
     def rBytes(self):
         '''
