@@ -112,6 +112,10 @@ class Profile(__NetLinkConn):
 
     @property
     def state(self):
+        '''
+        Class property: returns <type 'str'> or <type 'NoneType'> of profiled
+        pids current state.
+        '''
         attrs = self.__pid_stat_attrs()
         state = attrs.get('state')
         return self.PROC_STATES[state]
@@ -171,7 +175,7 @@ class Profile(__NetLinkConn):
     def __pid_status_attrs(self):
         '''
         Private class method: (not meant to be called directly) populates a
-        <type 'dict'> with pids attributes.
+        <type 'dict'> with pid attributes read from "status".
         '''
         try:
             with open('/proc/%s/status' % self.pid) as f:
@@ -183,6 +187,10 @@ class Profile(__NetLinkConn):
         return pid_attrs
 
     def __pid_stat_attrs(self):
+        '''
+        Private class method: (not meant to be called directly) populates a
+        <type 'dict'> with pid attributes read from "stat".
+        '''
         try:
             with open('/proc/%s/stat' % self.pid) as f:
                 stats = f.read()
