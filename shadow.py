@@ -9,6 +9,10 @@ from connection import __NetLinkConn
 
 
 class Profile(__NetLinkConn):
+    '''
+    Profile object: builds a <Profile> object from the "pid" provided on
+    initialization.
+    '''
 
     STAT_FIELDS = ['pid', 'tcomm', 'state', 'ppid', 'pgrp', 'sid', 'tty_nr', 
                    'tty_pgrp', 'flags', 'min_flt', 'cmin_flt', 'maj_flt',
@@ -27,10 +31,6 @@ class Profile(__NetLinkConn):
                    'T':'traced', 'W':'paging'
                   }
 
-    '''
-    Profile object: builds a <Profile> object from the "pid" provided on
-    initialization.
-    '''
     def __init__(self, pid):
         super(Profile, self).__init__()
         self.pid = pid
