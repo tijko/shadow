@@ -212,8 +212,8 @@ class Profile(__NetLinkConn):
                 raw_attrs = f.read()
         except IOError:
             raise BadProcess(self.pid)
-        pid_attrs = {i[0].strip(':').lower():i[1:] for i in
-                     [attr.split() for attr in raw_attrs.split('\n')] if i}
+        pid_attrs = {i[0].strip(':').lower():i[1:] for i in 
+                     map(str.split, raw_attrs.split('\n')) if i}
         return pid_attrs
 
     @property
