@@ -3,9 +3,15 @@
 
 import os
 import time
+import ctypes
 
 from exception import *
 from connection import __NetLinkConn
+
+
+PRIO_PROCESS = ctypes.c_int(0)
+PRIO_PGRP = ctypes.c_int(1)
+PRIO_USER = ctypes.c_int(2)
 
 
 class Profile(__NetLinkConn):
@@ -34,6 +40,7 @@ class Profile(__NetLinkConn):
     def __init__(self, pid):
         super(Profile, self).__init__()
         self.pid = pid
+        self.__libc = ctypes.CDLL('libc.so.6')
         self.__rst_state = self.rBytes() 
         self.__wst_state = self.wBytes()
         self._last_r = self.__rst_state
@@ -124,6 +131,13 @@ class Profile(__NetLinkConn):
         if state:
             return self.PROC_STATES[state]
         return 'Unknown'
+
+    def nice(self):
+        '''
+        Class property: returns <type 'int'> of profiled pids niceness
+        '''
+        niceness = self.__libc.getpriority(PRIO_PROCESS, self.pid)
+        return niceness
 
     def switches(self):
         '''
