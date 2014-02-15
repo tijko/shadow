@@ -138,12 +138,12 @@ class Profile(__NetLinkConn):
         <type 'NoneType'>.
 
         @type 'level': <type 'int'>
-        @param 'level': the new nice to profiled pid to.
+        @param 'level': the new nice to set profiled pid to.
         '''
         setnice(self.pid, level)
         return 
 
-    def iopriority(self):
+    def ioprio(self):
         '''
         Class method: returns <type 'tuple'> of profiled pids IO_Priority
         class and ioprio_nice. 
