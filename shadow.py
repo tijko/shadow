@@ -134,11 +134,22 @@ class Profile(__NetLinkConn):
 
     def nice(self):
         '''
-        Class property: returns <type 'int'> of profiled pids niceness
+        Class method: returns <type 'int'> of profiled pids niceness.
         '''
         niceness = self.__libc.getpriority(PRIO_PROCESS, self.pid)
         return niceness
 
+    def setnice(self, level):
+        '''
+        Class method: sets the niceness of profiled pid, returns 
+        <type 'NoneType'>.
+
+        @type 'level': <type 'int'>
+        @param 'level':  the new nice to set profiled pid to.
+        '''
+        self.__libc.setpriority(PRIO_PROCESS, self.pid, level)
+        return
+        
     def switches(self):
         '''
         Class method: returns <type 'int'> for the number of context switches
@@ -248,4 +259,5 @@ class Profile(__NetLinkConn):
         return self.__repr__()
 
     def __repr__(self):
-        return "<class '%s (pid: %s)'>" % (self.__class__.__name__, self.pid)
+        return "<class '%s (pid: %s | name: %s)'>" % (self.__class__.__name__, 
+                                                      self.pid, self.name)
