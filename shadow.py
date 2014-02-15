@@ -3,15 +3,10 @@
 
 import os
 import time
-import ctypes
 
 from exception import *
 from connection import __NetLinkConn
-
-
-PRIO_PROCESS = ctypes.c_int(0)
-PRIO_PGRP = ctypes.c_int(1)
-PRIO_USER = ctypes.c_int(2)
+from priorities import nice, setnice, ioprio
 
 
 class Profile(__NetLinkConn):
@@ -40,7 +35,6 @@ class Profile(__NetLinkConn):
     def __init__(self, pid):
         super(Profile, self).__init__()
         self.pid = pid
-        self.__libc = ctypes.CDLL('libc.so.6')
         self.__rst_state = self.rBytes() 
         self.__wst_state = self.wBytes()
         self._last_r = self.__rst_state
@@ -136,19 +130,25 @@ class Profile(__NetLinkConn):
         '''
         Class method: returns <type 'int'> of profiled pids niceness.
         '''
-        niceness = self.__libc.getpriority(PRIO_PROCESS, self.pid)
-        return niceness
+        return nice(self.pid)
 
     def setnice(self, level):
         '''
-        Class method: sets the niceness of profiled pid, returns 
+        Class method: sets the niceness of profiled pid, returns
         <type 'NoneType'>.
 
         @type 'level': <type 'int'>
-        @param 'level':  the new nice to set profiled pid to.
+        @param 'level': the new nice to profiled pid to.
         '''
-        self.__libc.setpriority(PRIO_PROCESS, self.pid, level)
-        return
+        setnice(self.pid, level)
+        return 
+
+    def iopriority(self):
+        '''
+        Class method: returns <type 'tuple'> of profiled pids IO_Priority
+        class and ioprio_nice. 
+        '''
+        return ioprio(self.pid)
         
     def switches(self):
         '''
