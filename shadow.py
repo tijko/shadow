@@ -4,6 +4,8 @@
 import os
 import time
 
+from collections import namedtuple
+
 from exception import *
 from connection import __NetLinkConn
 from priorities import nice, setnice, ioprio
@@ -225,6 +227,30 @@ class Profile(__NetLinkConn):
         '''
         current_w = self.wBytes()
         return current_w - self.__wst_state
+
+    def smap(self):        
+        smap_tuple = namedtuple('smap', ['Size', 'Rss', 'Pss', 'Shared_Clean', 
+                                         'Shared_Dirty', 'Private_Clean', 
+                                         'Private_Dirty', 'Referenced', 
+                                         'Anonymous', 'AnonHugePages', 'Swap', 
+                                         'KernelPageSize', 'MMUPageSize',
+                                         'Locked', 'VmFlags']
+                               )
+        try:
+            with open('/proc/%s/smaps' % self.pid)  as f:
+                proc_smap = f.readlines()
+        except IOError:
+            raise BadProcess(self.pid)
+        proc_smaps = [proc_smap[i:i + 16] for i in 
+                      xrange(0, len(proc_smap), 16)]
+        smappings = dict()
+        rm_newline = lambda ln: ln.strip('\n')
+        for smap in proc_smaps:
+            path_name = smap[0].split()[-1]
+            _smap = [''.join(i.split(' ')[1:]) for i in smap[1:]]
+            _smap = map(rm_newline, _smap)
+            smappings[path_name] = smap_tuple(*_smap)
+        return smappings
 
     @property
     def __pid_status_attrs(self):
