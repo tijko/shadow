@@ -229,6 +229,10 @@ class Profile(__NetLinkConn):
         return current_w - self.__wst_state
 
     def smap(self):        
+        '''
+        Class method: returns <type 'dict'> of namedtuples for the profiled
+        pids mapping memory consumption.
+        '''
         smap_tuple = namedtuple('smap', ['Size', 'Rss', 'Pss', 'Shared_Clean', 
                                          'Shared_Dirty', 'Private_Clean', 
                                          'Private_Dirty', 'Referenced', 
