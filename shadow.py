@@ -256,6 +256,14 @@ class Profile(__NetLinkConn):
             smappings[path_name] = smap_tuple(*_smap)
         return smappings
 
+    def pmap(self):
+        '''
+        Class method: returns <type 'tuple'> of the profiled pids memory map.
+        '''
+        smap = self.smap()
+        pmap = smap.keys()
+        return tuple(pmap)
+
     @property
     def __pid_status_attrs(self):
         '''
