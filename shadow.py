@@ -266,8 +266,8 @@ class Profile(__NetLinkConn):
 
     def wchan(self):
         '''
-        Class method: returns <type 'str'> kernel symbol of the profiled pids
-        current sleep place.
+        Class method: returns <type 'str'> of a kernel symbol where the profiled 
+        pid currently sleeping(if at all).
         '''
         try: 
             with open('/proc/%s/wchan' % self.pid) as f:
