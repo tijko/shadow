@@ -264,6 +264,18 @@ class Profile(__NetLinkConn):
         pmap = smap.keys()
         return tuple(pmap)
 
+    def wchan(self):
+        '''
+        Class method: returns <type 'str'> kernel symbol of the profiled pids
+        current sleep place.
+        '''
+        try: 
+            with open('/proc/%s/wchan' % self.pid) as f:
+                wchan = f.read()
+            return wchan
+        except IOError:
+            raise BadProcess(self.pid)
+
     @property
     def __pid_status_attrs(self):
         '''
