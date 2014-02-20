@@ -276,6 +276,21 @@ class Profile(__NetLinkConn):
         except IOError:
             raise BadProcess(self.pid)
 
+    def fdstat(self):
+        '''
+        Class method: returns <type 'dict'> for all file-descriptors as the keys
+        and tuple for the files stats.
+        '''
+        path = '/proc/%s/fd/' % self.pid
+        try:
+            fds = [path + i for i in os.listdir(path)]
+            fdstat = dict(zip(map(os.readlink, fds), map(os.stat, fds)))
+        except IOError:
+            raise BadProcess(self.pid)
+        return fdstat
+
+
+
     @property
     def __pid_status_attrs(self):
         '''
