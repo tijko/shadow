@@ -289,7 +289,16 @@ class Profile(__NetLinkConn):
             raise BadProcess(self.pid)
         return fdstat
 
-
+    def fdperms(self):
+        '''
+        Class method: returns <type 'dict'> for all file-descriptors real path
+        as keys and their file permissions as octal values.
+        '''
+        fdstats = self.fdstat()
+        permission_mask = lambda mask: oct(mask & 0777)
+        modes = [fdstats[i].st_mode for i in fdstats]
+        permissions = dict(zip(fdstats.keys(), map(permission_mask, modes)))
+        return permissions
 
     @property
     def __pid_status_attrs(self):
