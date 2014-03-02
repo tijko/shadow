@@ -43,6 +43,7 @@ class StructParseError(Exception):
         msg = "Error parsing process <%s> netlink struct" % self.pid
         return msg
 
+
 class NetlinkError(Exception):
     '''
     Message returned an netlink error response.
