@@ -93,7 +93,7 @@ def parse_msg(pid, ntlink_msg):
         try:
             seg_len, seg_type = struct.unpack('HH', ntlink_msg[:NLMSG_PAD])
             msg_segments[seg_type] = ntlink_msg[NLMSG_PAD:seg_len]
-            seg_len = ((seg_len + HDR_ALG) & ~PAD_MASK )
+            seg_len = ((seg_len + HDR_ALG) & ~PAD_MASK)
             ntlink_msg = ntlink_msg[seg_len:]
         except struct.error:
             raise StructParseError(parse_msg.func_name, pid)
@@ -112,7 +112,7 @@ def gentlnk_taskstat(conn, conn_pid, pid):
     ntlink_response = conn.recvfrom(16384)[0]
     segments = parse_msg(pid, ntlink_response[NLM_OFFSET:])
     if not segments.get(4):
-        return (0, 0)
+        raise NetlinkError(pid)
     ntlink_msg = parse_msg(pid, segments[4])[3]
     try:
         pid_read = struct.unpack('Q', r_segment(ntlink_msg))[0]
