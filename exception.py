@@ -42,3 +42,14 @@ class StructParseError(Exception):
     def __str__(self):
         msg = "Error parsing process <%s> netlink struct" % self.pid
         return msg
+
+class NetlinkError(Exception):
+    '''
+    Message returned an netlink error response.
+    '''
+    def __init__(self, pid):
+        self.pid = pid
+
+    def __str__(self):
+        msg = "Error message returned from netlink <%s>" % self.pid
+        return msg
