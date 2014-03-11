@@ -302,11 +302,11 @@ class Profile(__NetLinkConn):
         return permissions
 
     def getrlimit(self, resource):
-    '''
-    Class method: returns <type 'int'> for the current soft-limit of
-    process.
-    '''
-    return getlimit(self.pid, resource)
+        '''
+        Class method: returns <type 'int'> for the current soft-limit of
+        process.
+        '''
+        return getlimit(self.pid, resource)
 
     @property
     def __pid_status_attrs(self):
