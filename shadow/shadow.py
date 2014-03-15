@@ -253,7 +253,7 @@ class Profile(__NetLinkConn):
         rm_newline = lambda ln: ln.strip('\n')
         for smap in proc_smaps:
             path_name = smap[0].split()[-1]
-            _smap = [''.join(i.split(' ')[1:]) for i in smap[1:]]
+            _smap = [''.join(i.split()[1:]) for i in smap[1:]]
             _smap = map(rm_newline, _smap)
             smappings[path_name] = smap_tuple(*_smap)
         return smappings
