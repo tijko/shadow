@@ -1,6 +1,9 @@
 #include <Python.h>
+#include <errno.h>
 #include <sys/resource.h>
 
+
+static PyObject *LimitErr;
 
 static PyObject *limit_getlimit(PyObject *self, PyObject *args)
 {
@@ -13,13 +16,15 @@ static PyObject *limit_getlimit(PyObject *self, PyObject *args)
 
     int ret = prlimit(pid, resource, new, old);
     if (ret < 0) {
+        PyErr_SetString(LimitErr, strerror(errno));
         return NULL;
     }
     return Py_BuildValue("l", old->rlim_cur);
 }
 
 static PyMethodDef limitmethods[] = {
-    {"getlimit", limit_getlimit, METH_VARARGS, "return current resource limits."},
+    {"getlimit", limit_getlimit, METH_VARARGS, 
+     "return current resource limits."},
     {NULL, NULL, 0, NULL}
 };
 
@@ -41,4 +46,7 @@ PyMODINIT_FUNC initlimit(void)
     PyModule_AddIntConstant(limitmod, "RLIMIT_RTTIME", RLIMIT_RTTIME);
     PyModule_AddIntConstant(limitmod, "RLIMIT_SIGPENDING", RLIMIT_SIGPENDING);
     PyModule_AddIntConstant(limitmod, "RLIMIT_STACK", RLIMIT_STACK);
+    LimitErr = PyErr_NewException("limit.error", NULL, NULL);
+    Py_INCREF(LimitErr);
+    PyModule_AddObject(limitmod, "error", LimitErr);
 }
