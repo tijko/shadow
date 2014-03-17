@@ -110,13 +110,17 @@ def gentlnk_taskstat(conn, conn_pid, pid):
                           FAMILY_SEQ + 2, payload)
     conn.send(hdr + payload)
     ntlink_response = conn.recvfrom(16384)[0]
+    msg_type = struct.unpack('H', ntlink_response[4:6])[0]
+    if msg_type == NLMSG_ERROR:
+        errno = struct.unpack('i', ntlink_response[16:20])[0]
+        raise NetlinkError(errno, pid)
     segments = parse_msg(pid, ntlink_response[NLM_OFFSET:])
     if not segments.get(4):
-        raise NetlinkError(pid)
+        raise StructParseError(gentlnk_taskstats.func_name, pid) 
     ntlink_msg = parse_msg(pid, segments[4])[3]
     try:
         pid_read = struct.unpack('Q', r_segment(ntlink_msg))[0]
         pid_write = struct.unpack('Q', w_segment(ntlink_msg))[0]
     except struct.error:
-        raise StructParseError 
+        raise StructParseError(gentlnk_taskstats.func_name, pid)
     return (pid_read, pid_write)
