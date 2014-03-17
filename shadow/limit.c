@@ -5,12 +5,12 @@
 static PyObject *limit_getlimit(PyObject *self, PyObject *args)
 {
     int pid, resource;
+    struct rlimit *new = NULL;
+    struct rlimit *old = malloc(sizeof *old);
     if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) {
         return NULL;
     }
 
-    struct rlimit *new = NULL;
-    struct rlimit *old = malloc(sizeof *old);
     int ret = prlimit(pid, resource, new, old);
     if (ret < 0) {
         return NULL;
