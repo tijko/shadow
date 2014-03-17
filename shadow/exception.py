@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+
+
 '''
 Exceptions for Profile objects.
 '''
@@ -40,7 +43,7 @@ class StructParseError(Exception):
         self.pid = pid
 
     def __str__(self):
-        msg = "Error parsing process <%s> netlink struct" % self.pid
+        msg = "<%s> netlink struct" % self.pid
         return msg
 
 
@@ -48,9 +51,10 @@ class NetlinkError(Exception):
     '''
     Message returned an netlink error response.
     '''
-    def __init__(self, pid):
+    def __init__(self, errno, pid):
         self.pid = pid
+        self.err = os.strerror(-errno)
 
     def __str__(self):
-        msg = "Error message returned from netlink <%s>" % self.pid
+        msg = "%s <%s>" % (self.err, self.pid)
         return msg
