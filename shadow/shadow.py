@@ -6,7 +6,7 @@ import time
 
 from collections import namedtuple
 
-from limit import * 
+from limits import * 
 from exception import *
 from connection import __NetLinkConn
 from priorities import nice, setnice, ioprio
@@ -302,12 +302,19 @@ class Profile(__NetLinkConn):
         permissions = dict(zip(fdstats.keys(), map(permission_mask, modes)))
         return permissions
 
-    def getrlimit(self, resource):
+    def curlimit(self, resource):
         '''
         Class method: returns <type 'int'> for the current soft-limit of
         process.
         '''
-        return getlimit(self.pid, resource)
+        return curlimit(self.pid, resource)
+
+    def maxlimit(self, resource):
+        '''
+        Class method: returns <type 'int'> for the current hard-limit of
+        process.
+        '''
+        return maxlimit(self.pid, resource)
 
     @property
     def __pid_status_attrs(self):
