@@ -45,7 +45,6 @@ static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
 static PyObject *libshadow_getcpu(PyObject *self, PyObject *args)
 {
     int pid, cpu;
-    int GETCPU = 318;
     if (!PyArg_ParseTuple(args, "i", &pid)) {
         return NULL;
     }
