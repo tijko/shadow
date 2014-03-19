@@ -6,7 +6,7 @@ import time
 
 from collections import namedtuple
 
-from limits import * 
+from libshadow import *
 from exception import *
 from connection import __NetLinkConn
 from priorities import nice, setnice, ioprio
@@ -315,6 +315,13 @@ class Profile(__NetLinkConn):
         process.
         '''
         return maxlimit(self.pid, resource)
+
+    def getcpu(self):
+        '''
+        Class method: returns <type 'int'> for the current processor running
+        the process.
+        '''
+        return getcpu(self.pid)
 
     @property
     def __pid_status_attrs(self):
