@@ -6,6 +6,6 @@
 
 #ifdef __x86_64__
 #define GETCPU 309
-#elif __x86_32__
+#elif __i386__
 #define GETCPU 318
 #endif
