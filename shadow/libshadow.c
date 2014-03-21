@@ -80,7 +80,7 @@ static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
         CPU_SET(i, &aotpid);
     }
     aotcpu(pid, aotsize, aotpid);
-    return NULL;
+    Py_RETURN_NONE;
 }
 
 int procek(char *dirname)
@@ -96,7 +96,7 @@ int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
     char *base = "/proc/";
     DIR *dir = opendir(base);
     struct dirent *cdir = malloc(sizeof *cdir);
-    while ((cdir == readdir(dir))) {
+    while ((cdir = readdir(dir))) {
         if (cdir->d_type == DT_DIR && procek(cdir->d_name)) {
             proc = strtol(cdir->d_name, NULL, 10);
             if (proc != isopid) {
