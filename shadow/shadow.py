@@ -323,6 +323,14 @@ class Profile(__NetLinkConn):
         '''
         return getcpu(self.pid)
 
+    def isoproc(self):
+        '''
+        Class method: returns <type 'NoneType'> :: sets the profiled process
+        to run on one core and all others run on other cores.
+        '''
+        isoproc(self.pid)
+        return
+
     @property
     def __pid_status_attrs(self):
         '''
