@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
-#include <sys/syscall.h>
 #include <sys/resource.h>
 
 #include "cpu.h"
@@ -44,25 +43,13 @@ static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
     return Py_BuildValue("l", old->rlim_max);
 }
 
-static PyObject *libshadow_getcpu(PyObject *self, PyObject *args)
-{
-    int pid, cpu;
-    if (!PyArg_ParseTuple(args, "i", &pid)) {
-        return NULL;
-    }
-    int ret = syscall(GETCPU, &cpu, &pid, NULL);
-    if (ret < 0) {
-        PyErr_SetString(ShadowErr, strerror(errno));
-        return NULL;
-    }
-    return Py_BuildValue("i", cpu);
-}
-
 static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
 {
     int pid, ret, i;
     cpu_set_t isopid;
     cpu_set_t aotpid;
+    CPU_ZERO(&isopid);
+    CPU_ZERO(&aotpid);
     size_t isosize = CPU_ALLOC_SIZE(1);
     size_t aotsize = CPU_ALLOC_SIZE(NPROC - 1);
     if (!PyArg_ParseTuple(args, "i", &pid)) {
@@ -76,7 +63,7 @@ static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
     if (ret < 0) {
         PyErr_SetString(ShadowErr, strerror(errno));
     }
-    for (i=1; i < NPROC; i++) {
+    for (i=1; i <= NPROC; i++) {
         CPU_SET(i, &aotpid);
     }
     aotcpu(pid, aotsize, aotpid);
