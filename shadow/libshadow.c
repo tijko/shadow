@@ -100,8 +100,6 @@ static PyMethodDef libshadowmethods[] = {
      "return current resource limits."},
     {"maxlimit", libshadow_maxlimit, METH_VARARGS,
      "return max resource limits."},
-    {"getcpu", libshadow_getcpu, METH_VARARGS,
-     "return the processor the process is running on."},
     {"isoproc", libshadow_isoproc, METH_VARARGS,
      "isolate process to run on one core."},
     {NULL, NULL, 0, NULL}
