@@ -6,7 +6,7 @@
 #include <dirent.h>
 #include <sys/resource.h>
 
-#include "cpu.h"
+#include "libshadow.h"
 
 
 static PyObject *ShadowErr;
