@@ -316,13 +316,6 @@ class Profile(__NetLinkConn):
         '''
         return maxlimit(self.pid, resource)
 
-    def getcpu(self):
-        '''
-        Class method: returns <type 'int'> for the current processor running
-        the process.
-        '''
-        return getcpu(self.pid)
-
     def isoproc(self):
         '''
         Class method: returns <type 'NoneType'> :: sets the profiled process
