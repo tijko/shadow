@@ -63,7 +63,7 @@ static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
     if (ret < 0) {
         PyErr_SetString(ShadowErr, strerror(errno));
     }
-    for (i=1; i <= NPROC; i++) {
+    for (i=1; i < NPROC; i++) { 
         CPU_SET(i, &aotpid);
     }
     aotcpu(pid, aotsize, aotpid);
@@ -95,6 +95,38 @@ int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
     return 0;
 }
 
+static PyObject *libshadow_relproc(PyObject *self, PyObject *args)
+{
+    int pid, i;
+    if (!PyArg_ParseTuple(args, "i", &pid)) {
+        return NULL;
+    }
+    cpu_set_t allproc;
+    CPU_ZERO(&allproc);
+    for (i=0; i < NPROC; i++) {
+        CPU_SET(i, &allproc);
+    }
+    size_t allsize = CPU_ALLOC_SIZE(NPROC);
+    aotcpu(0, sizeof allsize, allproc);
+    Py_RETURN_NONE;
+}
+
+static PyObject *libshadow_procaff(PyObject *self, PyObject *args)
+{
+    int pid, ret, affinity;
+    cpu_set_t cpumask;
+    if (!PyArg_ParseTuple(args, "i", &pid)) {
+        return NULL;
+    }
+    ret = sched_getaffinity(pid, sizeof cpumask, &cpumask);
+    if (ret < 0) {
+        PyErr_SetString(ShadowErr, strerror(errno));
+        return NULL;
+    }
+    affinity = CPU_COUNT(&cpumask);
+    Py_BuildValue("i", affinity);
+}
+
 static PyMethodDef libshadowmethods[] = {
     {"curlimit", libshadow_curlimit, METH_VARARGS, 
      "return current resource limits."},
@@ -102,6 +134,10 @@ static PyMethodDef libshadowmethods[] = {
      "return max resource limits."},
     {"isoproc", libshadow_isoproc, METH_VARARGS,
      "isolate process to run on one core."},
+    {"relproc", libshadow_relproc, METH_VARARGS,
+     "release isolated process."},
+    {"procaff", libshadow_procaff, METH_VARARGS,
+     "return process affinity."},
     {NULL, NULL, 0, NULL}
 };
 
