@@ -324,6 +324,21 @@ class Profile(__NetLinkConn):
         isoproc(self.pid)
         return
 
+    def relproc(self):
+        '''
+        Class method: returns <type 'NoneType'> :: releases a process that has
+        been isolated.
+        '''
+        relproc(self.pid)
+        return
+
+    def procaff(self):
+        '''
+        Class method: returns <type 'int'> for the number of cpus currently in
+        processes cpu set.
+        '''
+        return procaff(self.pid)
+
     @property
     def __pid_status_attrs(self):
         '''
