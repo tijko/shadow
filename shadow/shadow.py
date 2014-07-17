@@ -4,6 +4,7 @@
 import os
 import time
 
+from functools import partial
 from collections import namedtuple
 
 from libshadow import *
@@ -284,8 +285,9 @@ class Profile(__NetLinkConn):
         and tuple for the files stats.
         '''
         path = '/proc/%s/fd/' % self.pid
+        path_constructor = partial(lambda drt, fn: os.path.join(drt, fn), path)
         try:
-            fds = [path + i for i in os.listdir(path)]
+            fds = map(path_constructor, os.listdir(path))
             fdstat = dict(zip(map(os.readlink, fds), map(os.stat, fds)))
         except IOError:
             raise BadProcess(self.pid)
