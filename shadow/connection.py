@@ -28,10 +28,10 @@ TASKSTATS_CMD_ATTR_PID = 0x1
 TASKSTATS_TYPE_AGGR_PID = 0x4
 TASKSTATS_TYPE_STATS = 0x3
 NLM_OFFSET = 0x14
-NLM_R_ST = 0xf8
-NLM_R_EN = 0x100
-NLM_W_ST = 0x100
-NLM_W_EN = 0x108
+NLM_RD_ST = 0xf8
+NLM_RD_EN = 0x100
+NLM_WR_ST = 0x100
+NLM_WR_EN = 0x108
 FAMILY_SEQ = 0x0
 OPT_VAL = 0xffff
 PAD_MASK = 0b11
@@ -59,8 +59,8 @@ class __NetLinkConn(object):
         return read, write
 
 
-r_segment = lambda m: m[NLM_R_ST:NLM_R_EN]
-w_segment = lambda m: m[NLM_W_ST:NLM_W_EN]
+r_segment = lambda m: m[NLM_RD_ST:NLM_RD_EN]
+w_segment = lambda m: m[NLM_WR_ST:NLM_WR_EN]
 
 def build_ntlnk_payload(nl_type, flags):
     return struct.pack('BBxx', nl_type, flags)
