@@ -48,7 +48,7 @@ class Profile(__NetLinkConn):
                                  'voluntary_ctxt_switches')
         if not self.__st_switches:
             self.__st_switches = 0
-
+        
     @property
     def is_alive(self):
         '''
@@ -108,6 +108,24 @@ class Profile(__NetLinkConn):
         if gid:
             return gid[0]
         return
+
+    @property
+    def tgid(self):
+        '''
+        Class property: returns <type 'int'> of profiled pids thread group id.
+        '''
+        tgid = self.__pid_status_attrs.get('tgid')
+        if tgid:
+            return tgid[0]
+        return 
+
+    def get_tids(self):
+        '''
+        Class method: returns <type 'list'> of profiled pids thread ids.
+        '''
+        threads_path = '/proc/%d/task/' % self.pid
+        threads = os.listdir(threads_path)
+        return threads
 
     @property
     def threads(self):
