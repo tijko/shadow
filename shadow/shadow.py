@@ -149,6 +149,22 @@ class Profile(__NetLinkConn):
             return self.PROC_STATES[state]
         return 'Unknown'
 
+    def load_aux_attrs(self):
+        '''
+        Class method: returns <type 'NoneType'>, this method creates additional
+        auxillary instance attributes.
+        '''
+        aux_attrs = self.__pid_status_attrs
+        for attr in aux_attrs:
+            if (len(aux_attrs[attr]) > 1 or
+                not aux_attrs[attr][0].isdigit()):
+                attr_value = ' '.join(aux_attrs[attr])
+            else:
+                attr_value = int(aux_attrs[attr][0])
+            if not hasattr(self, attr):
+                setattr(self, attr, attr_value)            
+    # update aux_attrs
+ 
     def nice(self):
         '''
         Class method: returns <type 'int'> of profiled pids niceness.
