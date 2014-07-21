@@ -162,9 +162,21 @@ class Profile(__NetLinkConn):
             else:
                 attr_value = int(aux_attrs[attr][0])
             if not hasattr(self, attr):
-                setattr(self, attr, attr_value)            
-    # update aux_attrs
- 
+                setattr(self, 'aux_' + attr, attr_value)            
+
+    def update_aux_attrs(self):
+        '''
+        Class method: returns <type 'NoneType'>, this method updates the
+        auxillary attributes (if load_aux_attrs methods has already been)
+        called.
+        '''
+        aux_attrs = self.__pid_status_attrs
+        for attr in aux_attrs:
+            if hasattr(self, 'aux_' + attr):
+                aux_attr = 'self.aux_' + attr
+                update_value = ' '.join(aux_attrs[attr])
+                exec("%s = '%s'" % (aux_attr, update_value))
+     
     def nice(self):
         '''
         Class method: returns <type 'int'> of profiled pids niceness.
