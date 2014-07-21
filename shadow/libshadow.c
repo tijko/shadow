@@ -1,10 +1,4 @@
 #include <Python.h>
-#include <sched.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <sys/resource.h>
 
 #include "libshadow.h"
 
