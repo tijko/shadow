@@ -38,12 +38,12 @@ static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
 static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
 {
     int pid, ret, i;
-    cpu_set_t isopid;
-    cpu_set_t aotpid;
+    cpu_set_t isopid, aotpid;
+    size_t isosize, aotsize;
     CPU_ZERO(&isopid);
     CPU_ZERO(&aotpid);
-    size_t isosize = CPU_ALLOC_SIZE(1);
-    size_t aotsize = CPU_ALLOC_SIZE(NPROC - 1);
+    isosize = CPU_ALLOC_SIZE(1);
+    aotsize = CPU_ALLOC_SIZE(NPROC - 1);
     if (!PyArg_ParseTuple(args, "i", &pid)) {
         return NULL;
     }
@@ -72,9 +72,12 @@ int procek(char *dirname)
 int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
 {
     int proc, ret;
-    char *base = "/proc/";
-    DIR *dir = opendir(base);
-    struct dirent *cdir = malloc(sizeof *cdir);
+    char *base;
+    DIR *dir;
+    struct dirent *cdir;
+    base = "/proc/";
+    dir = opendir(base);
+    cdir = malloc(sizeof *cdir);
     while ((cdir = readdir(dir))) {
         if (cdir->d_type == DT_DIR && procek(cdir->d_name)) {
             proc = strtol(cdir->d_name, NULL, 10);
@@ -90,15 +93,16 @@ int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
 static PyObject *libshadow_relproc(PyObject *self, PyObject *args)
 {
     int pid, i;
+    cpu_set_t allproc;
+    size_t allsize;
     if (!PyArg_ParseTuple(args, "i", &pid)) {
         return NULL;
     }
-    cpu_set_t allproc;
     CPU_ZERO(&allproc);
     for (i=0; i < NPROC; i++) {
         CPU_SET(i, &allproc);
     }
-    size_t allsize = CPU_ALLOC_SIZE(NPROC);
+    allsize = CPU_ALLOC_SIZE(NPROC);
     aotcpu(0, sizeof allsize, allproc);
     Py_RETURN_NONE;
 }
