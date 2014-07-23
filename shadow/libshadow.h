@@ -12,7 +12,12 @@
 
 
 #define NPROC sysconf(_SC_NPROCESSORS_ONLN)
+
+#ifdef __x86_64__
+#define TGKILL_CALL 234
+#elif __i386__
 #define TGKILL_CALL 270
+#endif
 
 int procek(char *dirname);
 
