@@ -123,6 +123,20 @@ static PyObject *libshadow_procaff(PyObject *self, PyObject *args)
     Py_BuildValue("i", affinity);
 }
 
+static PyObject *libshadow_tkill(PyObject *self, PyObject *args)
+{
+    int tgid, tid, sig, ret;
+    if (!PyArg_ParseTuple(args, "iii", &tgid, &tid, &sig)) {
+        return NULL;
+    }
+    ret = syscall(TGKILL_CALL, tgid, tid, sig);
+    if (ret == -1) {
+        PyErr_SetString(ShadowErr, strerror(errno));
+        return NULL;
+    }
+    Py_RETURN_NONE;
+}
+
 static PyMethodDef libshadowmethods[] = {
     {"curlimit", libshadow_curlimit, METH_VARARGS, 
      "return current resource limits."},
@@ -134,6 +148,8 @@ static PyMethodDef libshadowmethods[] = {
      "release isolated process."},
     {"procaff", libshadow_procaff, METH_VARARGS,
      "return process affinity."},
+    {"tkill", libshadow_tkill, METH_VARARGS,
+     "terminates a thread with 'tid' with 'sig' signal."},
     {NULL, NULL, 0, NULL}
 };
 
