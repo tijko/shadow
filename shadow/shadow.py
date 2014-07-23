@@ -416,6 +416,14 @@ class Profile(__NetLinkConn):
         pid_stats = dict(zip(self.STAT_FIELDS, stats.split()))
         return pid_stats
 
+    def tgkill(self, tgid, tid, sig):
+        '''
+        Class method: returns <type 'NoneType'> :: sends signal 'sig' to thread
+        'tid' in thread group 'tgid'.
+        '''
+        tkill(tgid, tid, sig)
+        return
+
     def __str__(self):
         return self.__repr__()
 
