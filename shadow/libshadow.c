@@ -156,6 +156,7 @@ static PyMethodDef libshadowmethods[] = {
 PyMODINIT_FUNC initlibshadow(void)
 {
     PyObject *shadowmod = Py_InitModule("libshadow", libshadowmethods);
+
     PyModule_AddIntConstant(shadowmod, "RLIMIT_AS", RLIMIT_AS);
     PyModule_AddIntConstant(shadowmod, "RLIMIT_CORE", RLIMIT_CORE);
     PyModule_AddIntConstant(shadowmod, "RLIMIT_CPU", RLIMIT_CPU);
@@ -171,6 +172,15 @@ PyMODINIT_FUNC initlibshadow(void)
     PyModule_AddIntConstant(shadowmod, "RLIMIT_RTTIME", RLIMIT_RTTIME);
     PyModule_AddIntConstant(shadowmod, "RLIMIT_SIGPENDING", RLIMIT_SIGPENDING);
     PyModule_AddIntConstant(shadowmod, "RLIMIT_STACK", RLIMIT_STACK);
+
+    PyModule_AddIntConstant(shadowmod, "SIGHUP", SIGHUP);
+    PyModule_AddIntConstant(shadowmod, "SIGINT", SIGINT);
+    PyModule_AddIntConstant(shadowmod, "SIGQUIT", SIGQUIT);
+    PyModule_AddIntConstant(shadowmod, "SIGABRT", SIGABRT);
+    PyModule_AddIntConstant(shadowmod, "SIGKILL", SIGKILL);
+    PyModule_AddIntConstant(shadowmod, "SIGTERM", SIGTERM);
+    PyModule_AddIntConstant(shadowmod, "SIGSTOP", SIGSTOP);
+
     ShadowErr = PyErr_NewException("libshadow.error", NULL, NULL);
     Py_INCREF(ShadowErr);
     PyModule_AddObject(shadowmod, "error", ShadowErr);
