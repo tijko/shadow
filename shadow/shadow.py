@@ -116,7 +116,7 @@ class Profile(__NetLinkConn):
         '''
         tgid = self.__pid_status_attrs.get('tgid')
         if tgid:
-            return tgid[0]
+            return int(tgid[0])
         return 
 
     def get_tids(self):
@@ -416,12 +416,16 @@ class Profile(__NetLinkConn):
         pid_stats = dict(zip(self.STAT_FIELDS, stats.split()))
         return pid_stats
 
-    def tgkill(self, tgid, tid, sig):
+    def tgkill(self, tid, sig):
         '''
         Class method: returns <type 'NoneType'> :: sends signal 'sig' to thread
         'tid' in thread group 'tgid'.
         '''
-        tkill(tgid, tid, sig)
+        tgid = self.tgid
+        if not tgid:
+            raise BadProcess(self.pid)
+        else:
+            tkill(tgid, tid, sig)
         return
 
     def __str__(self):
