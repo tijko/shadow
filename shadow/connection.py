@@ -62,8 +62,8 @@ class __NetLinkConn(object):
 r_segment = lambda m: m[NLM_RD_ST:NLM_RD_EN]
 w_segment = lambda m: m[NLM_WR_ST:NLM_WR_EN]
 
-def build_ntlnk_payload(nl_type, flags):
-    return struct.pack('BBxx', nl_type, flags)
+def build_genlhdr(cmd, version):
+    return struct.pack('BBxx', cmd, version)
 
 def build_ntlnk_hdr(conn_pid, version, flags, seq, payload):
     length = len(payload)
@@ -75,7 +75,7 @@ def build_padding(load):
     return pad
 
 def get_family_name(conn, conn_pid, pid):
-    payload = b''.join([build_ntlnk_payload(CTRL_CMD_GETFAMILY, FAMILY_SEQ)])
+    payload = b''.join([build_genlhdr(CTRL_CMD_GETFAMILY, FAMILY_SEQ)])
     gen_id = struct.pack('%dsB' % len('TASKSTATS'), 'TASKSTATS', 0)
     pad = build_padding(gen_id)
     genhdr = struct.pack('HH', len(gen_id) + HDR_PAD, 2)
@@ -101,7 +101,7 @@ def parse_msg(pid, ntlink_msg):
 
 def gentlnk_taskstat(conn, conn_pid, pid):
     ntlnk_family = get_family_name(conn, conn_pid, pid)
-    payload = b''.join([build_ntlnk_payload(TASKSTATS_CMD_GET, 0)])
+    payload = b''.join([build_genlhdr(TASKSTATS_CMD_GET, 0)])
     gen_id = struct.pack('I', pid)
     pad = build_padding(gen_id)
     genhdr = struct.pack('HH', len(gen_id) + HDR_PAD, 1)
