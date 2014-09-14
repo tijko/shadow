@@ -28,14 +28,14 @@ TASKSTATS_CMD_ATTR_PID = 0x1
 TASKSTATS_TYPE_AGGR_PID = 0x4
 TASKSTATS_TYPE_STATS = 0x3
 NLM_OFFSET = 0x14
-NLM_RD_ST = 0xf8
+NLM_RD_ST = 0xF8
 NLM_RD_EN = 0x100
 NLM_WR_ST = 0x100
 NLM_WR_EN = 0x108
 FAMILY_SEQ = 0x0
-OPT_VAL = 0xffff
+OPT_VAL = 0xFFFF
 PAD_MASK = 0b11
-HDR_ALG = 0b11
+NLMSG_ALIGNTO = 0b100
 HDR_PAD = 0x4
 NLMSG_PAD = 0x4
 NTLNK_BUF = 0x10
@@ -71,7 +71,7 @@ def build_ntlnk_hdr(conn_pid, version, flags, seq, payload):
     return hdr
   
 def build_padding(load):
-    pad = ((len(load) + HDR_ALG) & ~PAD_MASK) - len(load)
+    pad = ((len(load) + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1)) - len(load)
     return pad
 
 def get_family_name(conn, conn_pid, pid):
@@ -93,7 +93,7 @@ def parse_msg(pid, ntlink_msg):
         try:
             seg_len, seg_type = struct.unpack('HH', ntlink_msg[:NLMSG_PAD])
             msg_segments[seg_type] = ntlink_msg[NLMSG_PAD:seg_len]
-            seg_len = ((seg_len + HDR_ALG) & ~PAD_MASK)
+            seg_len = ((seg_len + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
             ntlink_msg = ntlink_msg[seg_len:]
         except struct.error:
             raise StructParseError(parse_msg.func_name, pid)
