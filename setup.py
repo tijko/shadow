@@ -13,7 +13,7 @@ setup(
     author='Tim Konick',
     author_email='konick781@gmail.com',
     url='',
-    description='Provides auxillary data about processes',
+    description='Provides auxillary data on processes',
     long_description=open('README.md').read(),
     license=open('LICENSE').read(),
     packages=['shadow'],
