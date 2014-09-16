@@ -51,12 +51,13 @@ TASKSTATS_CMD_ATTR_REGISTER_CPUMASK   = 3
 TASKSTATS_CMD_ATTR_DEREGISTER_CPUMASK = 4
 __TASKSTATS_CMD_ATTR_MAX              = 5
 
-TASKSTATS_GENL_NAME = 'TASKSTATS'
+TASKSTATS_GENL_NAME    = 'TASKSTATS'
+TASKSTATS_GENL_VERSION = 0x1
 
 
 class Taskstats(Connection):
     '''
-    The main class which calls makes request through NetLinkMessage to
+    The main class that makes requests to assembly netlink messages to
     communicate taskstats.
     '''
     def __init__(self):
@@ -77,8 +78,7 @@ class Taskstats(Connection):
         self.send(fam_req)
         return self.recv()
 
-    def calc_alignment(self, data):
-        return ((len(data) + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
+
 
     def parse_msg(self, msg):
         nl_len, nl_type = struct.unpack('IHHII', msg[:16])[:2]
@@ -88,7 +88,7 @@ class Taskstats(Connection):
         attributes = dict()
         while (nlattrs):
             nla_len, nla_type = map(int, struct.unpack('HH', nlattrs[:4]))
-            nla_len = self.calc_alignment(nlattrs[:nla_len])
+            nla_len = calc_alignment(nlattrs[:nla_len])
             nla_data = nlattrs[4:nla_len]
             attributes[nla_type] = nla_data
             nlattrs = nlattrs[nla_len:]
