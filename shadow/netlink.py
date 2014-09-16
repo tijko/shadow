@@ -110,7 +110,7 @@ class Nlattr(object):
 
     def build_nlattr(self):
         if isinstance(self.nla_data, str):
-            padding = self.calc_alignment(self.nla_data)
+            padding = calc_alignment(self.nla_data)
             self.nla_len = struct.calcsize('HH') + padding
             self.nla_hdr = struct.pack('HH', self.nla_len, self.nla_type)
             data  = struct.pack('%ds' % padding, self.nla_data)
@@ -119,3 +119,6 @@ class Nlattr(object):
             self.nla_len = struct.calcsize('HHI')
             nla = [self.nla_len, self.nla_type, self.nla_data]
             self.nlattr = struct.pack('HHI', *nla)
+
+def calc_alignment(data):
+    return ((len(data) + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
