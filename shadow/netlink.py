@@ -35,16 +35,18 @@ GENL_ID_CTRL = NLMSG_MIN_TYPE
 
 class Nlmsghdr(object):
     '''
-    The NetlinkMessage class handles the assembly of netlink headers.
+    The Nlmsghdr class handles the assembly of netlink headers and encapsulation
+    of the associated fields.
     '''
-    def __init__(self):
-        super(NetlinkMessage, self).__init__()
+    def __init__(self, nlmsg_type):
         self.pid = os.getpid()
         self.flags = NLM_F_REQUEST
         self.genl_version = 0
+        self.nlmsg_len = 0
+        self.nlmsg_type = nlmsg_type
+        self.seq = 0
         
-    def build_nlmsghdr(self, nlmsg_type, nlmsg_len):
-        seq = 0
+    def build_hdr(self):
         nlmsg_len += struct.calcsize('IHHII')
         hdr = [nlmsg_len, nlmsg_type, self.flags, seq, self.pid]
         nlmsghdr = struct.pack('IHHII', *hdr)
@@ -63,6 +65,22 @@ CTRL_CMD_DELMCAST_GRP  = 8
 CTRL_CMD_GETMCAST_GRP  = 9
 __CTRL_CMD_MAX         = 10
 
+        
+
+class Genlmsghdr(object):
+    '''
+    The Genlmsghdr class handles the assembly of generic-netlink headers and 
+    encapsulation of the associated fields.
+    '''
+    def __init__(self, cmd, version):
+        self.cmd = cmd
+        self.genl_version = version
+        self.genlmsg_len = 0
+
+    def build_hdr(self):
+        self.genlmsg_hdr = struct.pack('BBxx', cmd, self.genl_version)
+        self.genlmsg_len = struct.calcsize('BBxx')
+
 CTRL_ATTR_UNSPEC       = 0
 CTRL_ATTR_FAMILY_ID    = 1
 CTRL_ATTR_FAMILY_NAME  = 2
@@ -77,35 +95,27 @@ CTRL_ATTR_OP_UNSPEC    = 0
 CTRL_ATTR_OP_ID        = 1
 CTRL_ATTR_OP_FLAGS     = 2
 __CTRL_ATTR_OP_MAX     = 3
-        
-
-class Genlmsghdr(object):
-
-    def __init__(self):
-        pass
-
-    def build_genlmsghdr(self, cmd):
-        genlhdr = struct.pack('BBxx', cmd, self.genl_version)
-        genl_len = struct.calcsize('BBxx')
-        return genlhdr, genl_len
 
 
 class Nlattr(object):
+    '''
+    The Nlattr class handles the assembly of netlink-attributes headers and 
+    encapsulation of the associated fields.
+    '''
 
-    def __init__(self):
-        pass
+    def __init__(self, nla_type, nla_data):
+        self.nla_type = nla_type
+        self.nla_data = nla_data
+        self.nla_len = 0
 
-    def build_nlattr(self, nla_type, nla_data):
-        if isinstance(nla_data, str):
-            padding = self.calc_alignment(nla_data)
-            nla_len = struct.calcsize('HH') + padding
-            nla_hdr = struct.pack('HH', nla_len, nla_type)
-            data  = struct.pack('%ds' % padding, nla_data)
-            nlattr = b''.join([nla_hdr, data])
-        elif isinstance(nla_data, int):
-            nla_len = struct.calcsize('HHI')
-            nla = [nla_len, nla_type, nla_data]
-            nlattr = struct.pack('HHI', *nla)
-        else:
-            return [], 0
-        return nlattr, nla_len
+    def build_nlattr(self):
+        if isinstance(self.nla_data, str):
+            padding = self.calc_alignment(self.nla_data)
+            self.nla_len = struct.calcsize('HH') + padding
+            self.nla_hdr = struct.pack('HH', self.nla_len, self.nla_type)
+            data  = struct.pack('%ds' % padding, self.nla_data)
+            self.nlattr = b''.join([self.nla_hdr, self.data])
+        elif isinstance(self.nla_data, int):
+            self.nla_len = struct.calcsize('HHI')
+            nla = [self.nla_len, self.nla_type, self.nla_data]
+            self.nlattr = struct.pack('HHI', *nla)
