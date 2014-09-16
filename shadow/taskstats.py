@@ -24,7 +24,7 @@ NLM_F_DUMP_INTR = 16
 NLM_F_ROOT      = 0x100
 NLM_F_MATCH     = 0x200
 NLM_F_ATOMIC    = 0x400
-NLM_F_DUMP      = (NLM_F_ROOT | NLMF_F_MATCH)
+NLM_F_DUMP      = (NLM_F_ROOT | NLM_F_MATCH)
 
 # Modifiers to NEW requests
 NLM_F_REPLACE   = 0x100
@@ -59,8 +59,6 @@ CTRL_ATTR_OP_UNSPEC = 0
 CTRL_ATTR_OP_ID     = 1
 CTRL_ATTR_OP_FLAGS  = 2
 __CTRL_ATTR_OP_MAX  = 3
-
-GENL_ID_CTRL = NLMSG_MIN_TYPE
 
 # Taskstats commands
 
@@ -107,14 +105,19 @@ class Connection(object):
     def recv(self):
         return self.conn.recv(65536)
     
+    
+NETLINK_GENERIC = 16
+NLMSG_ALIGNTO   = 4
+
+NLMSG_MIN_TYPE  = 0x10
+NLMSG_ERROR     = 0x2
+
+GENL_ID_CTRL = NLMSG_MIN_TYPE
+
 
 class NetlinkMessage(Connection):
 
-    NLMSG_MIN_TYPE  = 0x10
-    NLMSG_ERROR     = 0x2
 
-    NETLINK_GENERIC = 16
-    ALIGNTO         = 4
     '''
     The NetlinkMessage class handles the assembly of netlink headers.
     '''
@@ -161,7 +164,7 @@ class NetlinkMessage(Connection):
         return nlattr, nla_len
 
     def calc_alignment(self, data):
-        return ((len(data) + ALIGNTO - 1) & ~(ALIGNTO - 1))
+        return ((len(data) + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
 
     def parse_msg(self, msg):
         nl_len, nl_type = struct.unpack('IHHII', msg[:16])[:2]
