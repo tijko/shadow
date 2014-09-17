@@ -9,12 +9,11 @@ from collections import namedtuple
 
 from libshadow import *
 from exception import *
-from connection import __NetLinkConn
+from taskstats.taskstats import Connection, Taskstats
 from priorities import nice, setnice, ioprio
 
 
-
-class Profile(__NetLinkConn):
+class Profile(object):
     '''
     Profile object: builds a <Profile> object from the "pid" provided on
     initialization.
@@ -38,7 +37,6 @@ class Profile(__NetLinkConn):
                   }
 
     def __init__(self, pid):
-        super(Profile, self).__init__()
         self.pid = pid
         self.__rst_state = self.rBytes() 
         self.__wst_state = self.wBytes()
@@ -226,7 +224,7 @@ class Profile(__NetLinkConn):
         Class method: returns <type 'int'> of pids total read bytes since 
         startup.
         '''
-        read = self._ntlnk_exchange()
+        read = range(30)#self._ntlnk_exchange()
         return read[0]
 
     def wBytes(self):
@@ -234,7 +232,7 @@ class Profile(__NetLinkConn):
         Class method: returns <type 'int'> of the pids total write bytes since 
         startup.
         '''
-        write = self._ntlnk_exchange()
+        write = range(30)#self._ntlnk_exchange()
         return write[1]
 
     def has_read(self):
