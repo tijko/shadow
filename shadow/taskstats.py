@@ -65,18 +65,19 @@ class Taskstats(Connection):
         self.family_id = None
 
     def taskstats_family_id(self):
+
         family_id_reply = self.get_family_id(TASKSTATS_GENL_NAME)
-        self.family_id = self.parse_msg(family_id_reply)
-        return struct.unpack('I', self.family_id[CTRL_ATTR_FAMILY_ID])[0]
-        
-    def get_family_id(self, family_name):
+#
         nlattr, nla_len = self.build_nlattr(CTRL_ATTR_FAMILY_NAME, family_name)
         genl_hdr, genl_len = self.build_genlmsghdr(CTRL_CMD_GETFAMILY)
         ntpayload_len = nla_len + genl_len
         nlmsg_hdr = self.build_nlmsghdr(GENL_ID_CTRL, ntpayload_len)
         fam_req = ''.join([nlmsg_hdr, genl_hdr, nlattr])
-        self.send(fam_req)
-        return self.recv()
+        #self.send(fam_req)
+        #return self.recv()
+        self.family_id = self.parse_msg(family_id_reply)
+        return struct.unpack('I', self.family_id[CTRL_ATTR_FAMILY_ID])[0]
+        
 
 
 

@@ -17,5 +17,5 @@ setup(
     long_description=open('README.md').read(),
     license=open('LICENSE').read(),
     packages=['shadow'],
-    ext_modules=[Extension('libshadow', sources=['shadow/libshadow.c'])]
+    ext_modules=[Extension('libshadow', sources=['shadow/libshadow/libshadow.c'])]
 )
