@@ -33,8 +33,8 @@ ioprio_get = lambda WHO, WHICH: libc.syscall(IOPRIO_GET, WHO, WHICH)
 getpriority = lambda WHO, WHICH: libc.getpriority(WHO, WHICH)
 setpriority = lambda WHO, WHICH, VALUE: libc.setpriority(WHO, WHICH, VALUE)
 
-def ioprio_mask(which, pid):
-    return ioprio_get(who, pid)
+def ioprio_mask(who, which):
+    return ioprio_get(who, which)
 
 def ioprio_class(mask):
     return IOPRIO_PRIO_CLASS(mask)
@@ -43,7 +43,7 @@ def ioprio_data(mask):
     return IOPRIO_PRIO_DATA(mask)
 
 def ioprio(which, who=IOPRIO_WHO_PROCESS):
-    mask = ioprio_mask(which, who)
+    mask = ioprio_mask(who, which)
     io_class = priority_classes[ioprio_class(mask)]
     return (io_class, ioprio_data(mask))
 
