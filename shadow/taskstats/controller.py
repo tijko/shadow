@@ -72,11 +72,12 @@ class Genlmsg(object):
         self.cmd = cmd
         self.version = version
         self.nlattr = nlattr
+        self.payload = self.nlattr.pack()
         self.genlen = Genlmsg.GENL_HDRLEN + self.nlattr.nla_len
 
     def pack(self):
         genlhdr = struct.pack('BBxx', self.cmd, self.version)
-        return genlhdr + self.nlattr.pack()
+        return genlhdr + self.payload
 
 
 class Controller(Connection):        
