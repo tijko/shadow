@@ -62,7 +62,7 @@ class Taskstats(object):
         attributes = dict()
         while (nlattrs):
             nla_len, nla_type = map(int, struct.unpack('HH', nlattrs[:4]))
-            nla_len = calc_alignment(nlattrs[:nla_len])
+            nla_len = calc_alignment(len(nlattrs[:nla_len]))
             nla_data = nlattrs[4:nla_len]
             attributes[nla_type] = nla_data
             nlattrs = nlattrs[nla_len:]
