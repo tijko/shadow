@@ -50,9 +50,10 @@ class Nlmsg(dict):
         self.genlmsg = genlmsg
         
     def pack(self):
+        payload = self.genlmsg.pack()
         self['nl_len'] += self.genlmsg.genlen 
         nlmsghdr = struct.pack('IHHII', *[self[field] for field in self.fields])
-        return nlmsghdr + self.genlmsg.pack()
+        return nlmsghdr + payload
 
 
 CTRL_ATTR_UNSPEC       = 0
