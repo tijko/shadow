@@ -24,7 +24,6 @@ NLM_F_EXCL      = 0x200
 NLM_F_CREATE    = 0x400
 NLM_F_APPEND    = 0x800
 
-NETLINK_GENERIC = 16
 NLMSG_ALIGNTO   = 4
 
 NLMSG_MIN_TYPE  = 0x10
@@ -33,52 +32,27 @@ NLMSG_ERROR     = 0x2
 GENL_ID_CTRL = NLMSG_MIN_TYPE
 
 
-class Nlmsghdr(object):
+class Nlmsg(dict):
     '''
     The Nlmsghdr class handles the assembly of netlink headers and encapsulation
     of the associated fields.
     '''
-    def __init__(self, nlmsg_type):
-        self.pid = os.getpid()
-        self.flags = NLM_F_REQUEST
-        self.genl_version = 0
-        self.nlmsg_len = 0
-        self.nlmsg_type = nlmsg_type
-        self.seq = 0
-        
-    def build_hdr(self):
-        self.nlmsg_len += struct.calcsize('IHHII')
-        hdr = [self.nlmsg_len, self.nlmsg_type, self.flags, self.seq, self.pid]
-        self.nlmsghdr = struct.pack('IHHII', *hdr)
+    NLMSG_HDRLEN = struct.calcsize('IHHII')
 
+    def __init__(self, nlmsg_type, genlmsg):
+        super(Nlmsg, self).__init__()
+        self.fields = ['nl_len', 'nl_type', 'nl_flags', 'nl_seq', 'nl_pid']
+        self['nl_pid'] = os.getpid()
+        self['nl_flags'] = NLM_F_REQUEST
+        self['nl_len'] = Nlmsg.NLMSG_HDRLEN 
+        self['nl_type'] = nlmsg_type
+        self['nl_seq'] = 0
+        self.genlmsg = genlmsg
         
-# Genetlink Controller command and attribute values
-CTRL_CMD_UNSPEC        = 0
-CTRL_CMD_NEWFAMILY     = 1
-CTRL_CMD_DELFAMILY     = 2
-CTRL_CMD_GETFAMILY     = 3 
-CTRL_CMD_NEWOPS        = 4
-CTRL_CMD_DELOPS        = 5
-CTRL_CMD_GETOPS        = 6
-CTRL_CMD_NEWMCAST_GRP  = 7
-CTRL_CMD_DELMCAST_GRP  = 8
-CTRL_CMD_GETMCAST_GRP  = 9
-__CTRL_CMD_MAX         = 10
-
-        
-class Genlmsghdr(object):
-    '''
-    The Genlmsghdr class handles the assembly of generic-netlink headers and 
-    encapsulation of the associated fields.
-    '''
-    def __init__(self, cmd, version):
-        self.cmd = cmd
-        self.genl_version = version
-        self.genlmsg_len = 0
-
-    def build_hdr(self):
-        self.genlmsg_hdr = struct.pack('BBxx', self.cmd, self.genl_version)
-        self.genlmsg_len = struct.calcsize('BBxx')
+    def pack(self):
+        self['nl_len'] += self.genlmsg.genlen 
+        nlmsghdr = struct.pack('IHHII', *[self[field] for field in self.fields])
+        return nlmsghdr + self.genlmsg.pack()
 
 
 CTRL_ATTR_UNSPEC       = 0
@@ -102,23 +76,30 @@ class Nlattr(object):
     The Nlattr class handles the assembly of netlink-attributes headers and 
     encapsulation of the associated fields.
     '''
+    NLA_HDRLEN = struct.calcsize('HH')
 
     def __init__(self, nla_type, nla_data):
         self.nla_type = nla_type
         self.nla_data = nla_data
-        self.nla_len = 0
+        self.nla_len = Nlattr.NLA_HDRLEN
 
-    def build_nlattr(self):
+    def pack(self):
+        nla_payload = self.payload
+        nla_hdr = struct.pack('HH', self.nla_len, self.nla_type)
+        return nla_hdr + nla_payload
+
+    @property
+    def payload(self):
+        load = ''
         if isinstance(self.nla_data, str):
-            padding = calc_alignment(self.nla_data)
-            self.nla_len = struct.calcsize('HH') + padding
-            self.nla_hdr = struct.pack('HH', self.nla_len, self.nla_type)
-            data  = struct.pack('%ds' % padding, self.nla_data)
-            self.nlattr = b''.join([self.nla_hdr, data])
+            padding = calc_alignment(len(self.nla_data))
+            self.nla_len += padding
+            load = struct.pack('%ds' % padding, self.nla_data)
         elif isinstance(self.nla_data, int):
-            self.nla_len = struct.calcsize('HHI')
-            nla = [self.nla_len, self.nla_type, self.nla_data]
-            self.nlattr = struct.pack('HHI', *nla)
+            self.nla_len += calc_alignment(struct.calcsize('I'))
+            load = struct.pack('I', self.nla_data)
+        return load
+
 
 def calc_alignment(data):
-    return ((len(data) + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
+    return ((data + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
