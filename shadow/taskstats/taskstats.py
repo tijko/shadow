@@ -6,29 +6,12 @@ This module sets a netlink connection, which will be used to communicate
 the taskstats data to shadowed PID's profile.
 '''
 
-import socket
 import struct
 
 from netlink import *
 from ..exception import *
+from controller import Controller
 
-
-class Connection(object):
-    '''
-    Base class that establishes a netlink connection with the kernel.
-    '''
-    def __init__(self):
-        self.conn = socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, 
-                                                      NETLINK_GENERIC)
-        self.conn.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 65536)
-        self.conn.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 65536)
-        self.conn.bind((0, 0))
-
-    def send(self, msg):
-        self.conn.send(msg)
-
-    def recv(self):
-        return self.conn.recv(65536)
 
 # Taskstats commands
 TASKSTATS_CMD_UNSPEC = 0
@@ -56,25 +39,20 @@ TASKSTATS_GENL_NAME    = 'TASKSTATS'
 TASKSTATS_GENL_VERSION = 0x1
 
 
-class Taskstats(Connection):
+class Taskstats(object):
     '''
     The Taskstats class makes requests to assemble netlink messages that
     communicate taskstats.
     '''
-    def __init__(self):
+    def __init__(self, pid):
         super(Taskstats, self).__init__()
         self.family_id = None
+        self.pid = pid
+        self.genlctrl = Controller(TASKSTATS_GENL_VERSION, TASKSTATS_GENL_NAME)
 
     def taskstats_family_id(self):
-        self.nlmsghdr = Nlmsghdr(GENL_ID_CTRL)         
-        self.genlmsghdr = Genlmsghdr(CTRL_CMD_GETFAMILY, TASKSTATS_GENL_VERSION)
-        self.nlattr = Nlattr(CTRL_ATTR_FAMILY_NAME, TASKSTATS_GENL_NAME)
-        self.nlmsghdr.build_hdr()
-        self.genlmsghdr.build_hdr()
-        self.nlattr.build_nlattr() 
-#
-#        self.family_id = self.parse_msg(family_id_reply)
-#        return struct.unpack('I', self.family_id[CTRL_ATTR_FAMILY_ID])[0]
+        family_id_response = self.genlctrl.family_id()
+        return self.parse_msg(family_id_response)
         
     def parse_msg(self, msg):
         nl_len, nl_type = struct.unpack('IHHII', msg[:16])[:2]
