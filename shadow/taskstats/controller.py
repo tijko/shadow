@@ -63,17 +63,38 @@ CTRL_CMD_GETMCAST_GRP  = 9
 __CTRL_CMD_MAX         = 10
 
 
+GENL_HDRLEN = struct.calcsize('BBxx')
+
+
 class Genlmsg(object):
     '''
-    '''
-    GENL_HDRLEN = struct.calcsize('BBxx')
+    Generic netlink message container, this class is to encapsulate the fields 
+    of struct genlmsghdr.  
 
+    struct genlmsghdr {
+        __u8 cmd;
+        __u8 version;
+        __16 reserved;
+    };
+
+    The `.pack()` method returns a binary c-formatted string of the generic
+    netlink header and its associated payload.
+
+    @param cmd :: the generic netlink command.
+    @type  cmd :: int
+
+    @param version :: the generic netlink version of the interface.
+    @type  version :: int
+
+    @param nlattr :: a Nlattr object containing the attributes for the call.
+    @type  nlattr :: Nlattr Class Object
+    '''
     def __init__(self, cmd, version, nlattr):
         self.cmd = cmd
         self.version = version
         self.nlattr = nlattr
         self.payload = self.nlattr.pack()
-        self.genlen = Genlmsg.GENL_HDRLEN + self.nlattr.nla_len
+        self.genlen = GENL_HDRLEN + self.nlattr.nla_len
 
     def pack(self):
         genlhdr = struct.pack('BBxx', self.cmd, self.version)
