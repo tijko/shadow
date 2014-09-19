@@ -31,20 +31,39 @@ NLMSG_ERROR     = 0x2
 
 GENL_ID_CTRL = NLMSG_MIN_TYPE
 
+NLMSG_HDRLEN = struct.calcsize('IHHII')
+
 
 class Nlmsg(dict):
     '''
-    The Nlmsghdr class handles the assembly of netlink headers and encapsulation
-    of the associated fields.
-    '''
-    NLMSG_HDRLEN = struct.calcsize('IHHII')
+    The Nlmsg container class handles the assembly of netlink headers and 
+    encapsulation of the associated fields.  
 
+    struct nlmsghdr {
+        __u32 nlmsg_len;
+        __u16 nlmsg_type;
+        __u16 nlmsg_flags;
+        __u32 nlmsg_seq;
+        __u32 nlmsg_pid;
+    };
+
+    Nlmsg subclasses `dict` type where the associated key-value pairs are the
+    struct-field of the netlink message header.  The `.pack()` method returns a
+    binary c-formatted string of the complete netlink message, header and 
+    payload.
+
+    @param nlmsg_type :: the netlink message type
+    @type  nlmsg_type :: int
+
+    @param genlmsg :: a Genlmsg object which will be the message payload
+    @type  genlmsg :: Genlmsg Class Object.
+    '''
     def __init__(self, nlmsg_type, genlmsg):
         super(Nlmsg, self).__init__()
         self.fields = ['nl_len', 'nl_type', 'nl_flags', 'nl_seq', 'nl_pid']
         self['nl_pid'] = os.getpid()
         self['nl_flags'] = NLM_F_REQUEST
-        self['nl_len'] = Nlmsg.NLMSG_HDRLEN 
+        self['nl_len'] = NLMSG_HDRLEN 
         self['nl_type'] = nlmsg_type
         self['nl_seq'] = 0
         self.genlmsg = genlmsg
@@ -71,18 +90,36 @@ CTRL_ATTR_OP_ID        = 1
 CTRL_ATTR_OP_FLAGS     = 2
 __CTRL_ATTR_OP_MAX     = 3
 
+NLA_HDRLEN = struct.calcsize('HH')
+
 
 class Nlattr(object):
     '''
-    The Nlattr class handles the assembly of netlink-attributes headers and 
-    encapsulation of the associated fields.
-    '''
-    NLA_HDRLEN = struct.calcsize('HH')
+    The Nlattr is a container class that handles the assembly of 
+    netlink-attributes headers and encapsulation of the associated fields.
 
+    struct nlattr {
+        __u16 nla_len;
+        __u16 nla_type;
+    };
+
+    The `.pack()` method returns a binary c-formatted string of the netlink
+    messages attributes and the attributes data.
+
+    The `.payload` property returns a binary c-formatted string of the Nlattr's
+    payload which as far as this netlink session is concerned is either a type
+    `int` or a type `str`.
+
+    @param nla_type :: the attribute type
+    @type  nla_type :: int
+
+    @param nla_data :: the attribute payload being sent
+    @type  nla_type :: int or str
+    '''
     def __init__(self, nla_type, nla_data):
         self.nla_type = nla_type
         self.nla_data = nla_data
-        self.nla_len = Nlattr.NLA_HDRLEN
+        self.nla_len = NLA_HDRLEN
 
     def pack(self):
         nla_payload = self.payload
