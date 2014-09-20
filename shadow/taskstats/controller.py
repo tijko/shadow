@@ -62,6 +62,7 @@ CTRL_CMD_DELMCAST_GRP  = 8
 CTRL_CMD_GETMCAST_GRP  = 9
 __CTRL_CMD_MAX         = 10
 
+TASKSTATS_GENL_VERSION = 0x1
 
 GENL_HDRLEN = struct.calcsize('BBxx')
 
@@ -83,13 +84,13 @@ class Genlmsg(object):
     @param cmd :: the generic netlink command.
     @type  cmd :: int
 
-    @param version :: the generic netlink version of the interface.
-    @type  version :: int
-
     @param nlattr :: a Nlattr object containing the attributes for the call.
     @type  nlattr :: Nlattr Class Object
+
+    @param version :: the generic netlink version of the interface (defaults to taskstats)
+    @type  version :: int
     '''
-    def __init__(self, cmd, version, nlattr):
+    def __init__(self, cmd, nlattr, version=TASKSTATS_GENL_VERSION):
         self.cmd = cmd
         self.version = version
         self.nlattr = nlattr
@@ -106,15 +107,17 @@ class Controller(Connection):
     Controller class that establishes a generic netlink connection with
     family of the supplied 'genl_name'.
     '''
-    def __init__(self, version, genl_name):
+    def __init__(self, genl_name):
         super(Controller, self).__init__(NETLINK_GENERIC)
-        self.genl_ver = version
         self.genl_name = genl_name
-        self.genlhdr = Genlmsg(CTRL_CMD_GETFAMILY, self.genl_ver, Nlattr(
-                               CTRL_ATTR_FAMILY_NAME, self.genl_name))
+        self.genlhdr = Genlmsg(CTRL_CMD_GETFAMILY, Nlattr(CTRL_ATTR_FAMILY_NAME, 
+                                                                self.genl_name))
+        self.fam_id = self.get_family_id
 
-    def family_id(self):
+    @property
+    def get_family_id(self):
         nlmsg = Nlmsg(GENL_ID_CTRL, self.genlhdr).pack()
         self.send(nlmsg)
         family_id_reply = self.recv()
-        return family_id_reply
+        attributes = parse_msg(family_id_reply)
+        return struct.unpack('I', attributes[CTRL_ATTR_FAMILY_ID])[0]
