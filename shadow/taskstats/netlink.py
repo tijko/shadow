@@ -32,6 +32,7 @@ NLMSG_ERROR     = 0x2
 GENL_ID_CTRL = NLMSG_MIN_TYPE
 
 NLMSG_HDRLEN = struct.calcsize('IHHII')
+GENL_HDRLEN  = struct.calcsize('BBxx')
 
 
 class Nlmsg(dict):
@@ -91,6 +92,7 @@ CTRL_ATTR_OP_FLAGS     = 2
 __CTRL_ATTR_OP_MAX     = 3
 
 NLA_HDRLEN = struct.calcsize('HH')
+NLA_MAXPAYLOAD = 16 
 
 
 class Nlattr(object):
@@ -141,3 +143,22 @@ class Nlattr(object):
 
 def calc_alignment(data):
     return ((data + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
+
+def parse_msg(nlattrs, nested=False):
+    if not nested:
+        nl_len, nl_type = struct.unpack('IHHII', nlattrs[:NLMSG_HDRLEN])[:2]
+        if nl_type == NLMSG_ERROR:
+            raise NetlinkError(parse_msg.func_name) # pass pid?
+        nlattrs = nlattrs[NLMSG_HDRLEN + GENL_HDRLEN:]
+    attributes = dict()
+    while (nlattrs):
+        nla_len, nla_type = map(int, struct.unpack('HH', nlattrs[:NLA_HDRLEN]))
+        nla_len = calc_alignment(len(nlattrs[:nla_len]))
+        nla_data = nlattrs[NLA_HDRLEN:nla_len]
+        if len(nla_data) > NLA_MAXPAYLOAD:
+            attributes[nla_type] = parse_msg(nla_data, True)
+            break
+        else:
+            attributes[nla_type] = nla_data
+            nlattrs = nlattrs[nla_len:]
+    return attributes
