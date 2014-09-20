@@ -39,6 +39,9 @@ __TASKSTATS_CMD_ATTR_MAX              = 5
 
 TASKSTATS_GENL_NAME    = 'TASKSTATS'
 
+READ_ALIGNMENT  = 248
+WRITE_ALIGNMENT = 256
+
 
 class Taskstats(object):
     '''
@@ -55,5 +58,12 @@ class Taskstats(object):
                                    TASKSTATS_CMD_ATTR_PID, self.pid))
         self.genlctrl.send(Nlmsg(self.genlctrl.fam_id, task_msg_payload).pack())
         task_response = self.genlctrl.recv()
-        return task_response
-    #    return parse_msg(task_response)
+        return parse_taskstats(task_response[NLA_HDRLEN:])[TASKSTATS_TYPE_STATS]
+    
+    def read(self):
+        taskstats = self.get()
+        return struct.unpack('Q', taskstats[READ_ALIGNMENT:READ_ALIGNMENT + 8])
+
+    def write(self):
+        taskstats = self.get()
+        return struct.unpack('Q', taskstats[WRITE_ALIGNMENT:WRITE_ALIGNMENT + 8])
