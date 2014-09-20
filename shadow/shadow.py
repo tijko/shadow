@@ -9,7 +9,7 @@ from collections import namedtuple
 
 from libshadow import *
 from exception import *
-from taskstats.taskstats import Connection, Taskstats
+from taskstats.taskstats import Taskstats
 from priorities import nice, setnice, ioprio
 
 
@@ -38,6 +38,7 @@ class Profile(object):
 
     def __init__(self, pid):
         self.pid = pid
+        self.__taskstats = Taskstats(self.pid)
         self.__rst_state = self.rBytes() 
         self.__wst_state = self.wBytes()
         self._last_r = self.__rst_state
@@ -224,16 +225,16 @@ class Profile(object):
         Class method: returns <type 'int'> of pids total read bytes since 
         startup.
         '''
-        read = range(30)#self._ntlnk_exchange()
-        return read[0]
+        bytes_read = self.__taskstats.read()
+        return bytes_read[0]
 
     def wBytes(self):
         '''
         Class method: returns <type 'int'> of the pids total write bytes since 
         startup.
         '''
-        write = range(30)#self._ntlnk_exchange()
-        return write[1]
+        bytes_written = self.__taskstats.write()
+        return bytes_written[0]
 
     def has_read(self):
         '''
