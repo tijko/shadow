@@ -119,5 +119,5 @@ class Controller(Connection):
         nlmsg = Nlmsg(GENL_ID_CTRL, self.genlhdr).pack()
         self.send(nlmsg)
         family_id_reply = self.recv()
-        attributes = parse_msg(family_id_reply)
+        attributes = parse_fam(family_id_reply)
         return struct.unpack('I', attributes[CTRL_ATTR_FAMILY_ID])[0]
