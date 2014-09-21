@@ -8,14 +8,17 @@ static PyObject *libshadow_curlimit(PyObject *self, PyObject *args)
     int pid, resource, ret;
     struct rlimit *cur;
     cur = malloc(sizeof *cur);
-    if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) {
+
+    if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) 
         return NULL;
-    }
+
     ret = prlimit(pid, resource, NULL, cur);
+
     if (ret < 0) {
         PyErr_SetString(ShadowErr, strerror(errno));
         return NULL;
     }
+
     return Py_BuildValue("k", cur->rlim_cur);
 }
 
@@ -24,14 +27,17 @@ static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
     int pid, resource, ret;
     struct rlimit *cur;
     cur = malloc(sizeof *cur);
-    if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) {
+
+    if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) 
         return NULL;
-    }
+
     ret = prlimit(pid, resource, NULL, cur);
+
     if (ret < 0) {
         PyErr_SetString(ShadowErr, strerror(errno));
         return NULL;
     }
+
     return Py_BuildValue("k", cur->rlim_max);
 }
 
@@ -44,20 +50,22 @@ static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
     CPU_ZERO(&aotpid);
     isosize = CPU_ALLOC_SIZE(1);
     aotsize = CPU_ALLOC_SIZE(NPROC - 1);
-    if (!PyArg_ParseTuple(args, "i", &pid)) {
+
+    if (!PyArg_ParseTuple(args, "i", &pid)) 
         return NULL;
-    }
-    if  (NPROC <= 1) {
+
+    if  (NPROC <= 1)
         return NULL;
-    }
+
     CPU_SET(0, &isopid);
     ret = sched_setaffinity(pid, isosize, &isopid);
-    if (ret < 0) {
+
+    if (ret < 0) 
         PyErr_SetString(ShadowErr, strerror(errno));
-    }
-    for (i=1; i < NPROC; i++) { 
+
+    for (i=1; i < NPROC; i++) 
         CPU_SET(i, &aotpid);
-    }
+
     aotcpu(pid, aotsize, aotpid);
     Py_RETURN_NONE;
 }
@@ -78,14 +86,15 @@ int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
     base = "/proc/";
     dir = opendir(base);
     cdir = malloc(sizeof *cdir);
+
     while ((cdir = readdir(dir))) {
         if (cdir->d_type == DT_DIR && procek(cdir->d_name)) {
             proc = strtol(cdir->d_name, NULL, 10);
-            if (proc != isopid) {
+            if (proc != isopid) 
                 ret = sched_setaffinity(proc, aotsize, &aotpid);
-            }
         }
     }
+ 
     closedir(dir);
     return 0;
 }
@@ -95,13 +104,15 @@ static PyObject *libshadow_relproc(PyObject *self, PyObject *args)
     int pid, i;
     cpu_set_t allproc;
     size_t allsize;
-    if (!PyArg_ParseTuple(args, "i", &pid)) {
+
+    if (!PyArg_ParseTuple(args, "i", &pid)) 
         return NULL;
-    }
+
     CPU_ZERO(&allproc);
-    for (i=0; i < NPROC; i++) {
+
+    for (i=0; i < NPROC; i++) 
         CPU_SET(i, &allproc);
-    }
+
     allsize = CPU_ALLOC_SIZE(NPROC);
     aotcpu(0, sizeof allsize, allproc);
     Py_RETURN_NONE;
@@ -111,14 +122,17 @@ static PyObject *libshadow_procaff(PyObject *self, PyObject *args)
 {
     int pid, ret, affinity;
     cpu_set_t cpumask;
-    if (!PyArg_ParseTuple(args, "i", &pid)) {
+
+    if (!PyArg_ParseTuple(args, "i", &pid))
         return NULL;
-    }
+
     ret = sched_getaffinity(pid, sizeof cpumask, &cpumask);
+
     if (ret < 0) {
         PyErr_SetString(ShadowErr, strerror(errno));
         return NULL;
     }
+
     affinity = CPU_COUNT(&cpumask);
     Py_BuildValue("i", affinity);
 }
@@ -126,14 +140,17 @@ static PyObject *libshadow_procaff(PyObject *self, PyObject *args)
 static PyObject *libshadow_tkill(PyObject *self, PyObject *args)
 {
     int tgid, tid, sig, ret;
-    if (!PyArg_ParseTuple(args, "iii", &tgid, &tid, &sig)) {
+
+    if (!PyArg_ParseTuple(args, "iii", &tgid, &tid, &sig)) 
         return NULL;
-    }
+
     ret = syscall(TGKILL_CALL, tgid, tid, sig);
+
     if (ret == -1) {
         PyErr_SetString(ShadowErr, strerror(errno));
         return NULL;
     }
+
     Py_RETURN_NONE;
 }
 
