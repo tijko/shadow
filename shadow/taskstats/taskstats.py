@@ -59,7 +59,7 @@ class Taskstats(object):
                                    TASKSTATS_CMD_ATTR_PID, self.pid))
         self.genlctrl.send(Nlmsg(self.genlctrl.fam_id, task_msg_payload).pack())
         task_response = self.genlctrl.recv()
-        parse_taskstats(self, task_response[NLA_HDRLEN:])
+        parse_response(self, task_response[NLA_HDRLEN:])
         return self.attrs[TASKSTATS_TYPE_STATS]
     
     def read(self):
