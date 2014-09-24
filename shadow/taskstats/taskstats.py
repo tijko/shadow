@@ -52,13 +52,15 @@ class Taskstats(object):
         super(Taskstats, self).__init__()
         self.pid = pid
         self.genlctrl = Controller(TASKSTATS_GENL_NAME)
+        self.attrs = dict()
 
     def get(self):
         task_msg_payload = Genlmsg(TASKSTATS_CMD_GET, Nlattr(
                                    TASKSTATS_CMD_ATTR_PID, self.pid))
         self.genlctrl.send(Nlmsg(self.genlctrl.fam_id, task_msg_payload).pack())
         task_response = self.genlctrl.recv()
-        return parse_taskstats(task_response[NLA_HDRLEN:])[TASKSTATS_TYPE_STATS]
+        parse_taskstats(self, task_response[NLA_HDRLEN:])
+        return self.attrs[TASKSTATS_TYPE_STATS]
     
     def read(self):
         taskstats = self.get()
