@@ -84,7 +84,7 @@ class Genlmsg(object):
     @param cmd :: the generic netlink command.
     @type  cmd :: int
 
-    @param nlattr :: a Nlattr object containing the attributes for the call.
+    @param nlattr :: Nlattr object containing the attributes for the call.
     @type  nlattr :: Nlattr Class Object
 
     @param version :: the generic netlink version of the interface (defaults to taskstats)
@@ -112,6 +112,7 @@ class Controller(Connection):
         self.genl_name = genl_name
         self.genlhdr = Genlmsg(CTRL_CMD_GETFAMILY, Nlattr(CTRL_ATTR_FAMILY_NAME, 
                                                                 self.genl_name))
+        self.attrs = dict()
         self.fam_id = self.get_family_id
 
     @property
@@ -119,5 +120,5 @@ class Controller(Connection):
         nlmsg = Nlmsg(GENL_ID_CTRL, self.genlhdr).pack()
         self.send(nlmsg)
         family_id_reply = self.recv()
-        attributes = parse_fam(family_id_reply)
-        return struct.unpack('I', attributes[CTRL_ATTR_FAMILY_ID])[0]
+        parse_fam(self, family_id_reply)
+        return struct.unpack('I', self.attrs[CTRL_ATTR_FAMILY_ID])[0]
