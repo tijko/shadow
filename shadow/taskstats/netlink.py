@@ -146,7 +146,6 @@ class Nlattr(object):
 def calc_alignment(data):
     return ((data + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
 
-
 def parse_response(nlobj, reply):
     nl_len, nl_type = struct.unpack('IHHII', reply[:NLMSG_HDRLEN])[:2]
     if nl_type == NLMSG_ERROR:
@@ -158,3 +157,4 @@ def parse_response(nlobj, reply):
         nla_data = nlattrs[NLA_HDRLEN:nla_len]
         nlobj.attrs[nla_type] = nla_data
         nlattrs = nlattrs[nla_len:]
+    return
