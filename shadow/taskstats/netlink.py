@@ -147,24 +147,14 @@ def calc_alignment(data):
     return ((data + NLMSG_ALIGNTO - 1) & ~(NLMSG_ALIGNTO - 1))
 
 
-def parse_fam(ctrl, fam_id_reply):
-    nl_len, nl_type = struct.unpack('IHHII', fam_id_reply[:NLMSG_HDRLEN])[:2]
+def parse_response(nlobj, reply):
+    nl_len, nl_type = struct.unpack('IHHII', reply[:NLMSG_HDRLEN])[:2]
     if nl_type == NLMSG_ERROR:
         raise NetlinkError(parse_msg.func_name) # pass pid?
-    nlattrs = fam_id_reply[NLMSG_HDRLEN + GENL_HDRLEN:]
+    nlattrs = reply[NLMSG_HDRLEN + GENL_HDRLEN:]
     while (nlattrs):
-        nlattrs = parse_nlattrs(ctrl, nlattrs)
-    return
-
-def parse_taskstats(tasker, taskstats):
-    while taskstats:
-        taskstats = parse_nlattrs(tasker, taskstats)
-    return
-
-def parse_nlattrs(nlobj, nlattrs):
-    nla_len, nla_type = map(int, struct.unpack('HH', nlattrs[:NLA_HDRLEN]))
-    nla_len = calc_alignment(len(nlattrs[:nla_len]))
-    nla_data = nlattrs[NLA_HDRLEN:nla_len]
-    nlobj.attrs[nla_type] = nla_data
-    nlattrs = nlattrs[nla_len:]
-    return nlattrs
+        nla_len, nla_type = map(int, struct.unpack('HH', nlattrs[:NLA_HDRLEN]))
+        nla_len = calc_alignment(len(nlattrs[:nla_len]))
+        nla_data = nlattrs[NLA_HDRLEN:nla_len]
+        nlobj.attrs[nla_type] = nla_data
+        nlattrs = nlattrs[nla_len:]
