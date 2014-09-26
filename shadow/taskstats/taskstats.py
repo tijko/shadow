@@ -39,8 +39,25 @@ __TASKSTATS_CMD_ATTR_MAX              = 5
 
 TASKSTATS_GENL_NAME    = 'TASKSTATS'
 
-READ_ALIGNMENT  = 248
-WRITE_ALIGNMENT = 256
+taskstat_struct = (('version', 'H'), ('ac_exitcode', 'I'), ('ac_flag', 'B'),
+                   ('ac_nice', 'B'), ('align', 'I'), ('cpu_count', 'Q'),
+                   ('cpu_delay_total', 'Q'), ('blkio_count', 'Q'),
+                   ('blkio_delay_total', 'Q'), ('swapin_count', 'Q'),
+                   ('swapin_delay_total', 'Q'), ('cpu_run_real_total', 'Q'),
+                   ('cpu_run_virtual_total', 'Q'), ('ac_comm', '32s'),
+                   ('ac_sched', 'B'), ('ac_pad', '3x'), ('align', 'BB'),
+                   ('ac_uid', 'I'), ('ac_gid', 'I'), ('ac_pid', 'I'),
+                   ('ac_ppid', 'I'), ('ac_btime', 'I'), ('align', 'B'),
+                   ('ac_etime', 'Q'), ('ac_utime', 'Q'), ('ac_stime', 'Q'),
+                   ('ac_minflt', 'Q'), ('ac_majflt', 'Q'), ('coremem', 'Q'),
+                   ('virtmem', 'Q'), ('hiwater_rss', 'Q'), ('hiwater_vm', 'Q'),
+                   ('read_char', 'Q'), ('write_char', 'Q'), 
+                   ('read_syscalls', 'Q'), ('write_syscalls', 'Q'), 
+                   ('read_bytes', 'Q'), ('write_bytes', 'Q'), 
+                   ('cancelled_write_bytes', 'Q'), ('nvcsw', 'Q'), 
+                   ('nivcsw', 'Q'), ('ac_utimescaled', 'Q'), 
+                   ('ac_stimescaled', 'Q'), ('cpu_scaled_run_real_total', 'Q'), 
+                   ('freepages_count', 'Q'), ('freepages_delay_total', 'Q'))
 
 
 class Taskstats(object):
@@ -53,19 +70,24 @@ class Taskstats(object):
         self.pid = pid
         self.genlctrl = Controller(TASKSTATS_GENL_NAME)
         self.attrs = dict()
+        self.taskstat_fields = [task[0] for task in taskstat_struct]
+        self.fmt = ''.join([task[1] for task in taskstat_struct])
 
-    def get(self):
+    def get_task(self, task):
         task_msg_payload = Genlmsg(TASKSTATS_CMD_GET, Nlattr(
                                    TASKSTATS_CMD_ATTR_PID, self.pid))
         self.genlctrl.send(Nlmsg(self.genlctrl.fam_id, task_msg_payload).pack())
         task_response = self.genlctrl.recv()
         parse_response(self, task_response[NLA_HDRLEN:])
-        return self.attrs[TASKSTATS_TYPE_STATS]
-    
+        taskstats_raw = self.attrs[TASKSTATS_TYPE_STATS]
+        taskstats = dict(zip(self.taskstat_fields, 
+                             struct.unpack(self.fmt, taskstats_raw)))
+        return taskstats.get(task)
+ 
     def read(self):
-        taskstats = self.get()
-        return struct.unpack('Q', taskstats[READ_ALIGNMENT:READ_ALIGNMENT + 8])
+        taskstats_read = self.get_task('read_bytes')
+        return taskstats_read
 
     def write(self):
-        taskstats = self.get()
-        return struct.unpack('Q', taskstats[WRITE_ALIGNMENT:WRITE_ALIGNMENT + 8])
+        taskstats_write = self.get_task('write_bytes')
+        return taskstats_write
