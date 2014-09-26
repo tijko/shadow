@@ -226,7 +226,7 @@ class Profile(object):
         startup.
         '''
         bytes_read = self.__taskstats.read()
-        return bytes_read[0]
+        return bytes_read
 
     def wBytes(self):
         '''
@@ -234,7 +234,7 @@ class Profile(object):
         startup.
         '''
         bytes_written = self.__taskstats.write()
-        return bytes_written[0]
+        return bytes_written
 
     def has_read(self):
         '''
