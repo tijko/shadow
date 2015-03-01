@@ -85,7 +85,6 @@ int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
     struct dirent *cdir;
     base = "/proc/";
     dir = opendir(base);
-    cdir = malloc(sizeof *cdir);
 
     while ((cdir = readdir(dir))) {
         if (cdir->d_type == DT_DIR && procek(cdir->d_name)) {
