@@ -79,6 +79,8 @@ class Taskstats(object):
         self.genlctrl.send(Nlmsg(self.genlctrl.fam_id, task_msg_payload).pack())
         task_response = self.genlctrl.recv()
         parse_response(self, task_response[NLA_HDRLEN:])
+        if not self.attrs.get(TASKSTATS_TYPE_STATS):
+            return -1 
         taskstats_raw = self.attrs[TASKSTATS_TYPE_STATS]
         taskstats = dict(zip(self.taskstat_fields, 
                              struct.unpack(self.fmt, taskstats_raw)))
