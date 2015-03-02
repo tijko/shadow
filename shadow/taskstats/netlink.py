@@ -151,7 +151,7 @@ def parse_response(nlobj, reply):
     if nl_type == NLMSG_ERROR:
         raise NetlinkError(parse_msg.func_name) # pass pid?
     nlattrs = reply[NLMSG_HDRLEN + GENL_HDRLEN:]
-    while (nlattrs):
+    while nlattrs:
         nla_len, nla_type = map(int, struct.unpack('HH', nlattrs[:NLA_HDRLEN]))
         nla_len = calc_alignment(len(nlattrs[:nla_len]))
         nla_data = nlattrs[NLA_HDRLEN:nla_len]
