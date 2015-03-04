@@ -39,7 +39,7 @@ class Profile(object):
     def __init__(self, pid):
         self.pid = pid
         self.__taskstats = Taskstats(self.pid)
-        self.__rst_state = self.rBytes() 
+        self.__rst_state = self.rBytes()
         self.__wst_state = self.wBytes()
         self._last_r = self.__rst_state
         self._last_w = self.__wst_state
@@ -63,27 +63,16 @@ class Profile(object):
         '''
         Class property: returns <type 'int'> of the profiled pid's parent.
         '''
-        try:
-            with open('/proc/%s/stat' % self.pid) as f:
-                pid_stats = f.read()
-        except IOError:
-            raise BadProcess(self.pid)
-        pid_stat_arr = pid_stats.split()
-        ppid = int(pid_stat_arr[3])
-        return ppid
+        pid_stats = self.file_reader('/proc/%s/stat' % self.pid)
+        return int(pid_stats.split()[3])
 
     @property
     def name(self):
         '''
         Class property: returns <type 'str'> of profiled pid's name.
         '''
-        try:
-            with open('/proc/%s/comm' % self.pid) as f:
-                pid_name = f.read()
-                name = pid_name.strip('\n')
-        except IOError:
-            raise BadProcess(self.pid)
-        return name
+        pid_name = self.file_reader('/proc/%s/comm' % self.pid)
+        return pid_name.strip('\n')
 
     @property
     def fds(self):
@@ -225,7 +214,10 @@ class Profile(object):
         Class method: returns <type 'int'> of pids total read bytes since 
         startup.
         '''
-        bytes_read = self.__taskstats.read()
+        try:
+            bytes_read = self.__taskstats.read()
+        except InsufficientRights:
+            bytes_read = self.procfs_read()
         return bytes_read
 
     def wBytes(self):
@@ -233,9 +225,20 @@ class Profile(object):
         Class method: returns <type 'int'> of the pids total write bytes since 
         startup.
         '''
-        bytes_written = self.__taskstats.write()
+        try:
+            bytes_written = self.__taskstats.write()
+        except InsufficientRights:
+            bytes_written = self.procfs_write()
         return bytes_written
 
+    def procfs_read(self):
+        read = self.file_reader('/proc/%s/io' % self.pid)
+        return int(read.split()[1])
+ 
+    def procfs_write(self):
+        write = self.file_reader('/proc/%s/io' % self.pid)
+        return int(write.split()[3])
+ 
     def has_read(self):
         '''
         Class method: returns <type 'bool'> for pid's reads since 
@@ -286,16 +289,14 @@ class Profile(object):
                                          'KernelPageSize', 'MMUPageSize',
                                          'Locked', 'VmFlags']
                                )
-        try:
-            with open('/proc/%s/smaps' % self.pid)  as f:
-                proc_smap = f.readlines()
-        except IOError:
-            raise BadProcess(self.pid)
+        proc_smap = self.file_reader('/proc/%s/smaps' % self.pid).split('\n')
         proc_smaps = [proc_smap[i:i + 16] for i in 
                       xrange(0, len(proc_smap), 16)]
         smappings = dict()
         rm_newline = lambda ln: ln.strip('\n')
         for smap in proc_smaps:
+            if not smap[0]:
+                continue
             path_name = smap[0].split()[-1]
             _smap = [''.join(i.split()[1:]) for i in smap[1:]]
             _smap = map(rm_newline, _smap)
@@ -315,12 +316,8 @@ class Profile(object):
         Class method: returns <type 'str'> of a kernel symbol where the profiled 
         pid currently sleeping(if at all).
         '''
-        try: 
-            with open('/proc/%s/wchan' % self.pid) as f:
-                wchan = f.read()
-            return wchan
-        except IOError:
-            raise BadProcess(self.pid)
+        wchan = self.file_reader('/proc/%s/wchan' % self.pid)
+        return wchan
 
     def fdstat(self):
         '''
@@ -384,17 +381,24 @@ class Profile(object):
         '''
         return procaff(self.pid)
 
+    def file_reader(self, fpath):
+        '''
+        Class method: returns <type 'str'> for the file contents of fpath.
+        '''
+        try:
+            with open(fpath) as f:
+                raw_file_data = f.read()
+        except IOError:
+            raise InvalidPath(fpath)
+        return raw_file_data
+
     @property
     def __pid_status_attrs(self):
         '''
         Private class property: (not meant to be called directly) populates a
         <type 'dict'> with pid attributes read from "status".
         '''
-        try:
-            with open('/proc/%s/status' % self.pid) as f:
-                raw_attrs = f.read()
-        except IOError:
-            raise BadProcess(self.pid)
+        raw_attrs = self.file_reader('/proc/%s/status' % self.pid)
         pid_attrs = {i[0].strip(':').lower():i[1:] for i in 
                      map(str.split, raw_attrs.split('\n')) if i}
         return pid_attrs
@@ -405,11 +409,7 @@ class Profile(object):
         Private class property: (not meant to be called directly) populates a
         <type 'dict'> with pid attributes read from "stat".
         '''
-        try:
-            with open('/proc/%s/stat' % self.pid) as f:
-                stats = f.read()
-        except IOError:
-            raise BadProcess(self.pid)
+        stats = self.file_reader('/proc/%s/stat' % self.pid)
         pid_stats = dict(zip(self.STAT_FIELDS, stats.split()))
         return pid_stats
 
