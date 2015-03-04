@@ -80,7 +80,7 @@ class Taskstats(object):
         task_response = self.genlctrl.recv()
         parse_response(self, task_response[NLA_HDRLEN:])
         if not self.attrs.get(TASKSTATS_TYPE_STATS):
-            return -1 
+            return -1
         taskstats_raw = self.attrs[TASKSTATS_TYPE_STATS]
         taskstats = dict(zip(self.taskstat_fields, 
                              struct.unpack(self.fmt, taskstats_raw)))
@@ -88,8 +88,12 @@ class Taskstats(object):
  
     def read(self):
         taskstats_read = self.get_task('read_bytes')
+        if taskstats_read == -1:
+            raise InsufficientRights(self.read.func_name, self.pid)
         return taskstats_read
 
     def write(self):
         taskstats_write = self.get_task('write_bytes')
+        if taskstats_write == -1:
+            raise InsufficientRights(self.write.func_name, self.pid)
         return taskstats_write
