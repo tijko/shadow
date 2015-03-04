@@ -58,3 +58,26 @@ class NetlinkError(Exception):
     def __str__(self):
         msg = "%s <%s>" % (self.err, self.pid)
         return msg
+
+class InsufficientRights(Exception):
+    '''
+    Error on user access to netlink.
+    '''
+    def __init__(self, func, pid):
+        self.func = func
+        self.pid = pid
+
+    def __str__(self):
+        msg = "Process <%s> is running under user id" % self.pid
+        return msg
+
+class InvalidPath(Exception):
+    '''
+    Error returned on an invalid path supplied for a file read.
+    '''
+    def __init__(self, fpath):
+        self.fpath = fpath
+
+    def __str__(self):
+        msg = "Invalid path <%s>" % self.fpath
+        return msg
