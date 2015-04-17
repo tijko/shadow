@@ -381,6 +381,18 @@ class Profile(object):
         '''
         return procaff(self.pid)
 
+    def start_time(self):
+        '''
+        Class method: returns <type 'float'> of seconds since boot that the 
+        process started at.
+        '''
+        sc_clk_tck = os.sysconf('SC_CLK_TCK')
+        uptime_data = self.file_reader('/proc/uptime')
+        stat_data = self.file_reader('/proc/%s/stat' % self.pid)
+        uptime = float(uptime_data.split()[0])
+        start_time = float(stat_data.split()[21])
+        return uptime - (start_time / sc_clk_tck)
+
     def file_reader(self, fpath):
         '''
         Class method: returns <type 'str'> for the file contents of fpath.
