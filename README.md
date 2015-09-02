@@ -10,7 +10,7 @@ The `Profile` class is subclassed from `__NetLinkConn` in the `connection.py`
 file. This base class sets up a linux netlink connection that handles the 
 communication of the processes input/output.
 
-    >>> from shadow.shadow import Profile
+    >>> from shadow import Profile
     >>>
     >>> p = Profile(321) #321 being a valid pid
     >>>
