@@ -19,7 +19,10 @@ static PyObject *libshadow_curlimit(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    return Py_BuildValue("k", cur->rlim_cur);
+    PyObject *limit_value = Py_BuildValue("k", cur->rlim_cur);
+    free(cur);
+
+    return limit_value;
 }
 
 static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
