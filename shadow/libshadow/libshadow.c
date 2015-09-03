@@ -24,14 +24,14 @@ static PyObject *libshadow_curlimit(PyObject *self, PyObject *args)
 
 static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
 {
-    int pid, resource, ret;
     struct rlimit *cur;
     cur = malloc(sizeof *cur);
 
+    int pid, resource;
     if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) 
         return NULL;
 
-    ret = prlimit(pid, resource, NULL, cur);
+    int ret = prlimit(pid, resource, NULL, cur);
 
     if (ret < 0) {
         PyErr_SetString(ShadowErr, strerror(errno));
