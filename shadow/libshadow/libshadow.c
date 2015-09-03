@@ -51,30 +51,30 @@ static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
 
 static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
 {
-    cpu_set_t isopid, aotpid;
+    cpu_set_t isoset, aothset;
 
-    CPU_ZERO(&isopid);
-    CPU_ZERO(&aotpid);
+    CPU_ZERO(&isoset);
+    CPU_ZERO(&aothset);
 
-    size_t isosize = CPU_ALLOC_SIZE(1);
-    size_t aotsize = CPU_ALLOC_SIZE(NPROC - 1);
+    size_t isoset_size = CPU_ALLOC_SIZE(1);
+    size_t aothset_size = CPU_ALLOC_SIZE(NPROC - 1);
 
     int pid;
     if (!PyArg_ParseTuple(args, "i", &pid) || NPROC <= 1) 
         return NULL;
 
-    CPU_SET(0, &isopid);
+    CPU_SET(0, &isoset);
 
-    int ret = sched_setaffinity(pid, isosize, &isopid);
+    int ret = sched_setaffinity(pid, isoset_size, &isoset);
 
     if (ret < 0) 
         PyErr_SetString(ShadowErr, strerror(errno));
 
     int i;
     for (i=1; i < NPROC; i++) 
-        CPU_SET(i, &aotpid);
+        CPU_SET(i, &aothset);
 
-    aotcpu(pid, aotsize, aotpid);
+    aothcpu(pid, aothset_size, aothset);
     Py_RETURN_NONE;
 }
 
@@ -87,12 +87,11 @@ int procek(char *dirname)
     return *procptr == '\0';
 }
 
-int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
+int aothcpu(int isopid, size_t aothset_size, cpu_set_t aothset)
 {
     struct dirent *cdir;
 
-    char *base = "/proc/";
-    DIR *dir = opendir(base);
+    DIR *dir = opendir(PROC_DIR);
 
     int proc;
 
@@ -100,11 +99,12 @@ int aotcpu(int isopid, size_t aotsize, cpu_set_t aotpid)
         if (cdir->d_type == DT_DIR && procek(cdir->d_name)) {
             proc = strtol(cdir->d_name, NULL, 10);
             if (proc != isopid) 
-                sched_setaffinity(proc, aotsize, &aotpid);
+                sched_setaffinity(proc, aothset_size, &aothset);
         }
     }
  
     closedir(dir);
+
     return 0;
 }
 
@@ -123,7 +123,7 @@ static PyObject *libshadow_relproc(PyObject *self, PyObject *args)
         CPU_SET(i, &allproc);
 
     allsize = CPU_ALLOC_SIZE(NPROC);
-    aotcpu(0, sizeof allsize, allproc);
+    aothcpu(0, sizeof allsize, allproc);
     Py_RETURN_NONE;
 }
 
