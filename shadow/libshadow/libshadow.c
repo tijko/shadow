@@ -5,8 +5,9 @@ static PyObject *ShadowErr;
 
 static PyObject *libshadow_curlimit(PyObject *self, PyObject *args)
 {
-    struct rlimit *cur;
-    cur = malloc(sizeof *cur);
+    struct rlimit *cur = malloc(sizeof *cur);
+    if (cur == NULL)
+        return NULL;
 
     int pid, resource;
     if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) 
@@ -27,8 +28,9 @@ static PyObject *libshadow_curlimit(PyObject *self, PyObject *args)
 
 static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
 {
-    struct rlimit *cur;
-    cur = malloc(sizeof *cur);
+    struct rlimit *cur = malloc(sizeof *cur);
+    if (cur == NULL)
+        return NULL;
 
     int pid, resource;
     if (!PyArg_ParseTuple(args, "ii", &pid, &resource)) 
@@ -41,7 +43,10 @@ static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    return Py_BuildValue("k", cur->rlim_max);
+    PyObject *limit_value = Py_BuildValue("k", cur->rlim_max);
+    free(cur);
+
+    return limit_value;
 }
 
 static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
