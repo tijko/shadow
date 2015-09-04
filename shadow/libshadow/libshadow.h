@@ -3,6 +3,7 @@
 
 #include <Python.h>
 
+#include <ctype.h>
 #include <sched.h>
 #include <errno.h>
 #include <unistd.h>
@@ -24,8 +25,6 @@
 #elif __i386__
 #define TGKILL_CALL 270
 #endif
-
-int procek(char *dirname);
 
 int aothcpu(int isopid, size_t aothset_size, cpu_set_t aothset);
 
