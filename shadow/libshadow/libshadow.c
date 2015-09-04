@@ -49,7 +49,7 @@ static PyObject *libshadow_maxlimit(PyObject *self, PyObject *args)
     return limit_value;
 }
 
-static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
+static PyObject *libshadow_iso(PyObject *self, PyObject *args)
 {
     cpu_set_t isoset, aothset;
 
@@ -75,6 +75,7 @@ static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
         CPU_SET(i, &aothset);
 
     aothcpu(pid, aothset_size, aothset);
+
     Py_RETURN_NONE;
 }
 
@@ -98,7 +99,7 @@ int aothcpu(int isopid, size_t aothset_size, cpu_set_t aothset)
     return 0;
 }
 
-static PyObject *libshadow_relproc(PyObject *self, PyObject *args)
+static PyObject *libshadow_release_iso(PyObject *self, PyObject *args)
 {
 
     int pid;
@@ -118,23 +119,24 @@ static PyObject *libshadow_relproc(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-static PyObject *libshadow_procaff(PyObject *self, PyObject *args)
+static PyObject *libshadow_affinity(PyObject *self, PyObject *args)
 {
-    int pid, ret, affinity;
-    cpu_set_t cpumask;
 
+    int pid;
     if (!PyArg_ParseTuple(args, "i", &pid))
         return NULL;
 
-    ret = sched_getaffinity(pid, sizeof cpumask, &cpumask);
+    cpu_set_t cpumask;
+    int ret = sched_getaffinity(pid, sizeof cpumask, &cpumask);
 
     if (ret < 0) {
         PyErr_SetString(ShadowErr, strerror(errno));
         return NULL;
     }
 
-    affinity = CPU_COUNT(&cpumask);
-    Py_BuildValue("i", affinity);
+    int affinity = CPU_COUNT(&cpumask);
+
+    return Py_BuildValue("i", affinity);
 }
 
 static PyObject *libshadow_tkill(PyObject *self, PyObject *args)
@@ -159,11 +161,11 @@ static PyMethodDef libshadowmethods[] = {
      "return current resource limits."},
     {"maxlimit", libshadow_maxlimit, METH_VARARGS,
      "return max resource limits."},
-    {"isoproc", libshadow_isoproc, METH_VARARGS,
+    {"iso", libshadow_iso, METH_VARARGS,
      "isolate process to run on one core."},
-    {"relproc", libshadow_relproc, METH_VARARGS,
+    {"release_iso", libshadow_release_iso, METH_VARARGS,
      "release isolated process."},
-    {"procaff", libshadow_procaff, METH_VARARGS,
+    {"affinity", libshadow_affinity, METH_VARARGS,
      "return process affinity."},
     {"tkill", libshadow_tkill, METH_VARARGS,
      "terminates a thread with 'tid' with 'sig' signal."},
