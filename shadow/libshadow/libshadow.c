@@ -100,20 +100,21 @@ int aothcpu(int isopid, size_t aothset_size, cpu_set_t aothset)
 
 static PyObject *libshadow_relproc(PyObject *self, PyObject *args)
 {
-    int pid, i;
-    cpu_set_t allproc;
-    size_t allsize;
 
+    int pid;
     if (!PyArg_ParseTuple(args, "i", &pid)) 
         return NULL;
 
+    cpu_set_t allproc;
     CPU_ZERO(&allproc);
 
+    int i;
     for (i=0; i < NPROC; i++) 
         CPU_SET(i, &allproc);
 
-    allsize = CPU_ALLOC_SIZE(NPROC);
+    size_t allsize = CPU_ALLOC_SIZE(NPROC);
     aothcpu(0, sizeof allsize, allproc);
+
     Py_RETURN_NONE;
 }
 
