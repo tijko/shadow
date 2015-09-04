@@ -45,19 +45,33 @@ class Profile(object):
         self._last_w = self.__wst_state
         self.__st_switches = self.__pid_status_attrs.get(
                                  'voluntary_ctxt_switches')
-        if not self.__st_switches:
+        if self.__st_switches is None:
             self.__st_switches = 0
         
     @property
     def is_alive(self):
         '''
-        Class property: returns <type 'bool'> response of processes state.
+        Class property.getter: returns <type 'bool'> response of processes 
+        state.
         '''
         all_processes = filter(lambda i: i.isdigit(), os.listdir('/proc'))
         if self.pid in map(int, all_processes):
             return True
         return False
 
+    @is_alive.setter
+    def is_alive(self, state):
+        '''
+        Class property.setter: sets the is_alive property to False if ending
+        the process is needed.
+        '''
+        if not isinstance(state, bool):
+            raise TypeError
+        tgid = self.tgid
+        if not tgid:
+            raise BadProcess(self.pid)
+        tkill(tgid, self.pid, SIGKILL)
+        
     @property
     def ppid(self):
         '''
