@@ -62,8 +62,8 @@ class Profile(object):
     @is_alive.setter
     def is_alive(self, state):
         '''
-        Class property.setter: sets the is_alive property to False if ending
-        the process is needed.
+        Class property.setter: returns <type 'NoneType'> sets the is_alive 
+        property to False if ending the process is needed.
         '''
         if not isinstance(state, bool):
             raise TypeError
@@ -158,8 +158,7 @@ class Profile(object):
         '''
         aux_attrs = self.__pid_status_attrs
         for attr in aux_attrs:
-            if not aux_attrs[attr]:
-                continue
+            if not aux_attrs[attr]: continue
             attr_value = ' '.join(aux_attrs[attr])
             if not hasattr(self, attr):
                 setattr(self, 'aux_' + attr, attr_value)            
@@ -309,8 +308,7 @@ class Profile(object):
         smappings = dict()
         rm_newline = lambda ln: ln.strip('\n')
         for smap in proc_smaps:
-            if not smap[0]:
-                continue
+            if not smap[0]: continue
             path_name = smap[0].split()[-1]
             _smap = [''.join(i.split()[1:]) for i in smap[1:]]
             _smap = map(rm_newline, _smap)
@@ -321,9 +319,7 @@ class Profile(object):
         '''
         Class method: returns <type 'tuple'> of the profiled pids memory map.
         '''
-        smap = self.smap()
-        pmap = smap.keys()
-        return tuple(pmap)
+        return tuple(self.smap().keys())
 
     def wchan(self):
         '''
