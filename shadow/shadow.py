@@ -358,28 +358,28 @@ class Profile(object):
         '''
         return maxlimit(self.pid, resource)
 
-    def isoproc(self):
+    def iso(self):
         '''
         Class method: returns <type 'NoneType'> :: sets the profiled process
         to run on one core and all others run on other cores.
         '''
-        isoproc(self.pid)
+        iso(self.pid)
         return
 
-    def relproc(self):
+    def release_iso(self):
         '''
         Class method: returns <type 'NoneType'> :: releases a process that has
         been isolated.
         '''
-        relproc(self.pid)
+        release_iso(self.pid)
         return
 
-    def procaff(self):
+    def affinity(self):
         '''
         Class method: returns <type 'int'> for the number of cpus currently in
         processes cpu set.
         '''
-        return procaff(self.pid)
+        return affinity(self.pid)
 
     def start_time(self):
         '''
