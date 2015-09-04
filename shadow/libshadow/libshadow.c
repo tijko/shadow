@@ -78,25 +78,15 @@ static PyObject *libshadow_isoproc(PyObject *self, PyObject *args)
     Py_RETURN_NONE;
 }
 
-int procek(char *dirname)
-{
-    char *procptr;
-
-    strtod(dirname, &procptr);
-
-    return *procptr == '\0';
-}
-
 int aothcpu(int isopid, size_t aothset_size, cpu_set_t aothset)
 {
     struct dirent *cdir;
-
     DIR *dir = opendir(PROC_DIR);
 
     int proc;
 
     while ((cdir = readdir(dir))) {
-        if (cdir->d_type == DT_DIR && procek(cdir->d_name)) {
+        if (cdir->d_type == DT_DIR && isdigit(cdir->d_name[0])) {
             proc = strtol(cdir->d_name, NULL, 10);
             if (proc != isopid) 
                 sched_setaffinity(proc, aothset_size, &aothset);
