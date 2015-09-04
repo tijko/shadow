@@ -141,12 +141,11 @@ static PyObject *libshadow_affinity(PyObject *self, PyObject *args)
 
 static PyObject *libshadow_tkill(PyObject *self, PyObject *args)
 {
-    int tgid, tid, sig, ret;
-
+    int tgid, tid, sig;
     if (!PyArg_ParseTuple(args, "iii", &tgid, &tid, &sig)) 
         return NULL;
 
-    ret = syscall(TGKILL_CALL, tgid, tid, sig);
+    int ret = syscall(TGKILL_CALL, tgid, tid, sig);
 
     if (ret == -1) {
         PyErr_SetString(ShadowErr, strerror(errno));
