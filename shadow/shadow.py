@@ -55,9 +55,7 @@ class Profile(object):
         state.
         '''
         all_processes = filter(lambda i: i.isdigit(), os.listdir('/proc'))
-        if self.pid in map(int, all_processes):
-            return True
-        return False
+        return self.pid in map(int, all_processes)
 
     @is_alive.setter
     def is_alive(self, state):
@@ -67,10 +65,9 @@ class Profile(object):
         '''
         if not isinstance(state, bool):
             raise TypeError
-        tgid = self.tgid
-        if not tgid:
+        if not self.tgid:
             raise BadProcess(self.pid)
-        tkill(tgid, self.pid, SIGKILL)
+        tkill(self.tgid, self.pid, SIGKILL)
         
     @property
     def ppid(self):
